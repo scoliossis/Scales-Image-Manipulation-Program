@@ -1,7 +1,4 @@
-# Scales Image Manipulation Program
-A project for my Computer Science coursework, due in 5 weeks.
-
-Structured assuming my teacher isn't out to get me, and this is the right content:
+# Scale's Image Manipulation Program
 https://www.bhasvic.ac.uk/media/pdf/computer-science-al-170844-specification-accredited-a-level-gce-computer-science-h446-874.pdf
 
 ---
@@ -14,6 +11,13 @@ https://www.bhasvic.ac.uk/media/pdf/computer-science-al-170844-specification-acc
 
 # Analysis of the Problem
 ## Problem Identification
+I am creating an image manipulation program. 
+This is a type of program which allows the user to scale, crop, rotate and draw on existing images or a blank canvas to produce new images.
+The aim of this project is to create a program which is straightforward to learn and use, yet still capable of complex image manipulation.
+Image manipulation programs are useful for professional jobs requiring image creation and tweaking as well as hobbyists pursuing creative projects.
+Since the program is intended to be used by a wide range of people, responses from users are imperative to the success of the project.
+Below is a screenshot of a popular image manipulation program, GIMP (GNU Image Manipulation Program).
+![gimpscreenshot.png](repo/gimpscreenshot.png)
 
 ## Stakeholders
 
