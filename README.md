@@ -29,7 +29,7 @@ Different fields of creativity, such as graphic designers and artists, can be ac
 - Cropping and scaling images are useful outside creative jobs, such as teachers wanting to resize handouts.
 - Adding text to images is desired for news publications creating a lead image
 ### Hobbyists
-- They will require a simple GUI which is easy to navigate on first use
+- They will require a simple GUI which is straightforward to navigate on first use
 - Runs well on low-quality setups as hobbyists do not necessarily have good hardware
 - Everything should be easy to understand without guides
 - Functions should be intuitive with experimentation with configuration
@@ -472,8 +472,251 @@ This allows for the mouse to draw smooth lines to a canvas, as shown below.
 This concludes my first prototype as I believe this is a good starting point, but some systems already need to be improved upon.
 
 ### Prototype 2
-Beginning this prototype, the GUI initialisation code is fine for now and so is the idea of the canvas.
+Beginning this prototype, the GUI initialisation code is fine for now, and so is the idea of the canvas.
 However, significant changes will be made to the input handling through this prototype.
+Object-orientated programming is perfect for a program like this.
+
+#### Element Class
+Instead of the Canvas class being its own stand-alone class, it should extend a parent Element class.
+The element class will hold all GUI elements which need to be drawn and clicked.
+With this in mind, the element class is shown below:
+```java
+public abstract class Element {
+    // static list of elements, to be used for handling each element
+    public static ArrayList<Element> elements = new ArrayList<>();
+
+    public int x, y, width, height;
+
+    /// lower priority means it is drawn first and handled last
+    public int priority;
+
+    public Element(int x, int y, int width, int height, int priority) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.priority = priority;
+
+        // when the element is initialised, it is added to the list for other parts of the program to handle it.
+        elements.add(this);
+        elements.sort(Comparator.comparingInt(a -> a.priority));
+    }
+
+    public abstract void draw(Graphics2D g);
+
+    /// return true if it wishes to block the click from registering to others
+    public abstract boolean handleClick(MouseEvent g);
+    public abstract boolean handleDrag(MouseEvent g);
+    public abstract boolean handleHover(MouseEvent g);
+}
+```
+I later decided to remove the priority variable.
+This is because I believe it is more readable to have a handwritten list of each element in order, as opposed to allowing each to define its own priority.
+Canvas is changed to extend Element.
+The draw function was already implemented, so I just need to implement the handleClick, handleDrag and handleHover functions.
+The handleDrag function for the canvas is currently handled by the MouseMotionListener, so I moved its code to the Canvas class.
+This makes the Canvas class change to below:
+```java
+public class Canvas extends Element {
+    private static final int DEFAULT_CANVAS_WIDTH = 500, DEFAULT_CANVAS_HEIGHT = 500;
+
+    public static BufferedImage CANVAS_IMAGE = new BufferedImage(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+    public static Graphics2D IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
+
+    public Canvas() {
+        // priority 0 means it is drawn first
+        super(0, 0, DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT, 0);
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        g.scale((double) this.width / CANVAS_IMAGE.getWidth(), (double) this.height / CANVAS_IMAGE.getHeight());
+
+        g.drawRect(0, 0, CANVAS_IMAGE.getWidth(), CANVAS_IMAGE.getHeight());
+        g.drawImage(CANVAS_IMAGE, 0, 0, null);
+    }
+
+    @Override
+    public boolean handleClick(MouseEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean handleDrag(MouseEvent e) {
+        if (MouseMotionListener.lastMouseDragX == -1) return false;
+
+        Canvas.IMAGE_GRAPHICS.setColor(Color.RED);
+        Canvas.IMAGE_GRAPHICS.drawLine(MouseMotionListener.lastMouseDragX, MouseMotionListener.lastMouseDragY, e.getX(), e.getY());
+
+        return true;
+    }
+
+    @Override
+    public boolean handleHover(MouseEvent e) {
+        return false;
+    }
+
+}
+```
+Since lastMouseDragX and lastMouseDragY from MouseMotionListener are both now needed in Canvas, it doesn't make sense to encapsulate them any more.
+lastMouseDragX and lastMouseDragY are made public, which changes MouseListener's mouseReleased function to:
+```java
+public void mouseReleased(MouseEvent e) {
+    MouseMotionListener.lastMouseDragX = MouseMotionListener.lastMouseDragY = -1;
+}
+```
+With these changes, we now need to call each Element function in their correct places.
+The draw function is called within Main.java's drawLoop function, shown below:
+```java
+private static void drawLoop() {
+    // ...
+
+    // draw each element
+    Canvas.elements.forEach(element -> {
+        AffineTransform currentTransform = FRAME_GRAPHICS.getTransform();
+        FRAME_GRAPHICS.translate(element.x, element.y);
+
+        element.draw(FRAME_GRAPHICS);
+
+        FRAME_GRAPHICS.setTransform(currentTransform);
+    });
+    
+    // ..
+}
+```
+And the handleDrag is handled by MouseMotionListener, as shown below:
+```java
+@Override
+public void mouseDragged(MouseEvent e) {
+    for (Element element : Element.elements.reversed()) {
+        // breaks out of the loop if the element wants to stop other elements from handling the drag event
+        if (element.handleDrag(e)) break;
+    }
+
+    lastMouseDragX = e.getX();
+    lastMouseDragY = e.getY();
+}
+```
+The other listeners were not previously implemented, so I will need to create new listeners for them.
+The handleHovered event is handled in the MouseMotionListener as shown below:
+```java
+@Override
+public void mouseDragged(MouseEvent e) {
+    // ...
+    handleMouseMoveEvent(e);
+    // ...
+}
+
+@Override
+public void mouseMoved(MouseEvent e) {
+    handleMouseMoveEvent(e);
+}
+
+private boolean isElementHovered(MouseEvent e, Element element) {
+    return e.getX() >= element.x && e.getX() <= element.x + element.width && e.getY() >= element.y && e.getY() <= element.y + element.height;
+}
+
+private void handleMouseMoveEvent(MouseEvent e) {
+    // reset the cursor to the default cursor, the element can then handle if it wants to change the cursor to something else
+    Main.FRAME.setCursor(Cursor.getDefaultCursor());
+    
+    for (Element element : Element.elements.reversed()) {
+        // breaks out of the loop if the element wants to stop other elements from handling the hover event
+        if (isElementHovered(e, element) && element.handleHover(e)) break;
+    }
+}
+```
+While writing the mouseClicked event, I realised that it makes sense to set the dragging element in there.
+I changed the handleDrag event to be posted as so:
+```java
+@Override
+public void mouseDragged(MouseEvent e) {
+    if (CURRENTLY_DRAGGING_ELEMENT != null) {
+        CURRENTLY_DRAGGING_ELEMENT.handleDrag(e);
+        CURRENTLY_DRAGGING_ELEMENT.handleHover(e);
+    }
+
+    lastMouseDragX = e.getX();
+    lastMouseDragY = e.getY();
+}
+```
+Where CURRENTLY_DRAGGING_ELEMENT is set inside MouseListener's mousePressed function, shown below:
+```java
+@Override
+public void mousePressed(MouseEvent e) {
+    boolean setDraggingElement = false;
+    for (Element element : Main.ELEMENTS.reversed()) {
+        // breaks out of the loop if the element currently hovered wants to stop other elements from handling the click event
+        if (MouseUtil.isMouseHovering(e, element)) {
+            if (!setDraggingElement) {
+                MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = element;
+                setDraggingElement = true;
+            }
+            if (element.handleClick(e)) break;
+        }
+    }
+}
+```
+With all these changes made to the Canvas class, the functionality of the program is the same, with the code now much more robust.
+
+#### Resizing the canvas
+To test the new Element class, I decided to make the Canvas resizable.
+With the Element clas it was made incredibly simple to change the mouse cursor and change the size of the canvas.
+From what could have been 100+ lines of code, to what is shown below:
+```java
+public class ResizeCanvasButton extends Element {
+    public ResizeCanvasButton() {
+        super(495, 495, 10, 10);
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        updatePosition();
+
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, width, height);
+    }
+
+    @Override
+    public boolean handleClick(MouseEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean handleDrag(MouseEvent e) {
+        Main.CANVAS.resizeCanvas(e.getX(), e.getY());
+        updatePosition();
+        return true;
+    }
+
+    @Override
+    public boolean handleHover(MouseEvent e) {
+        Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR));
+        return true;
+    }
+
+    private void updatePosition() {
+        this.x = Canvas.CANVAS_IMAGE.getWidth() - (this.width / 2);
+        this.y = Canvas.CANVAS_IMAGE.getHeight() - (this.height  / 2);
+    }
+}
+```
+Canvas.resizeCanvas was created too which is shown below:
+```java
+public void resizeCanvas(int width, int height) {
+    // store old image so it can be redrawn to the new resized image.
+    BufferedImage oldImage = CANVAS_IMAGE;
+    IMAGE_GRAPHICS.dispose();
+
+    CANVAS_IMAGE = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
+    IMAGE_GRAPHICS.drawImage(oldImage, 0, 0, null);
+    this.width = width;
+    this.height = height;
+}
+```
+Below is a screenshot of me hovering the resize button.
+![resizeButtonWow.png](repo/resizeButtonWow.png)
 
 ## Testing to Inform Development
 [annotated evidence for testing!? and show "remedial" actions taken (how fancy)]

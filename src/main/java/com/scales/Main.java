@@ -1,18 +1,27 @@
 package com.scales;
 
+import com.scales.Elements.Element;
+import com.scales.Elements.ResizeCanvasButton;
 import com.scales.Listeners.MouseListener;
 import com.scales.Listeners.MouseMotionListener;
-import com.scales.UiElements.Canvas;
+import com.scales.Elements.Canvas;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
+import java.util.List;
 
 public class Main {
     public static final JFrame FRAME = new JFrame();
     public static Graphics2D FRAME_GRAPHICS;
+
+    public static final Canvas CANVAS = new Canvas();
+
+    public static final List<Element> ELEMENTS = List.of(
+            CANVAS,
+            new ResizeCanvasButton()
+    );
 
     public static void main(String[] args) {
         initialiseGUI();
@@ -26,6 +35,10 @@ public class Main {
         FRAME.setLocationRelativeTo(null);
         // closes the program when the window is closed
         FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // todo: remove
+        FRAME.setUndecorated(true);
+
         // makes the frame visible
         FRAME.setVisible(true);
         // create a frame buffer, which will be drawn to as opposed to drawing directly to the screen
@@ -52,8 +65,15 @@ public class Main {
             // reset screen
             FRAME_GRAPHICS.clearRect(0, 0, FRAME.getWidth(), FRAME.getHeight());
 
-            // draw the canvas
-            Canvas.draw(FRAME_GRAPHICS);
+            // draw each element
+            ELEMENTS.forEach(e -> {
+                AffineTransform currentTransform = FRAME_GRAPHICS.getTransform();
+                FRAME_GRAPHICS.translate(e.x, e.y);
+
+                e.draw(FRAME_GRAPHICS);
+
+                FRAME_GRAPHICS.setTransform(currentTransform);
+            });
 
             // the drawing is finished, display the buffer
             bufferStrategy.show();
