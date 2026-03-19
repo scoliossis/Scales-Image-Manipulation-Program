@@ -78,7 +78,16 @@ The layout of Paint is very nice, however, I believe it is still bloated compare
 I believe that GIMP’s idea of each button having sub-buttons is a good idea for the compactness of the GUI.
 I believe the optional sub-settings should be accessible but not forced to be configured on each use.
 For my solution to thrive, I will need to narrow down essential features.
-### Essential Features
+
+### Language choice
+I will be using Java as my language of choice.
+Java is an object-oriented language, allowing for easier maintainability and reusability of code.
+It is compiled, which allows for faster execution as code optimisation can be performed at compile time.
+The language is also cross-platform as the compiled java bytecode is interpreted to machine code by the Java Virtual Machine (JVM).
+This means that the program can be written once and run on any operating system which supports the JVM.
+It comes with a large standard library, which allows for a wide range of features.
+This includes JavaFX, which is a framework which allows the user to create a GUI in a simple and intuitive way.
+
 ### Problem Limitations
 The program is made with many different stakeholders' ideals at heart. 
 They can each have conflicting desires, which makes it difficult to satisfy everyone.
@@ -88,7 +97,6 @@ Abstraction must be used to cull unnecessary features, and complex effects may b
 Image manipulation is a new field of research for me, which means that I will need to learn the basics for this project, which is another factor which takes time away.
 
 ### Success Criteria
-<!-- todo: MORE -->
 |   Criteria    | Description                                                             |
 |:-------------:|-------------------------------------------------------------------------|
 | User Friendly | The user should be able to use the program without any difficulty.      |
@@ -98,26 +106,191 @@ Image manipulation is a new field of research for me, which means that I will ne
 
 # Design of the Solution
 ## Decomposition
-<!-- todo: picture of decomposition..? what does this comment mean? -->
+<!--Break down the problem into smaller parts suitable for computational solutions justifying any decisions made.-->
+The program will be structured into subproblems which will be solved in turn.
+- GUI
+  - Initialising
+  - Toolbar
+  - Canvas
+  - Transforming the canvas
+    - Zooming in/out
+    - Moving the canvas
+- Handling Inputs
+  - Clicking on elements of the GUI
+    - Appropriately changing the cursor's position relative to transformations of canvas
+  - Keyboard input
+    - CTRL+Z / CTRL+Y
+    - CTRL+C / CTRL+V
+    - CTRL+A
+    - CTRL+S
+- Manipulating Images
+  - Scaling
+    - Cropping
+    - Rotating
+    - Drawing
+- Saving Images
 
 ## Solution Description
 ### Justification of Structure
+<!--Explain and justify the structure of the solution.-->
+To come to this conclusion, I had to use computational thinking.
+Abstraction, Decomposition and Problem Recognition are all computational methods.
+#### Abstraction
+Abstraction is the process of hiding the complexity of a problem by simplifying it.
+This is done by removing unnecessary details from the problem and replacing them with simpler, more abstract terms.
+For example, this program does not need to worry about the difficulties of creating a GUI from scratch, as JavaFX can handle this for us.
 
-#### Creating Window
+#### Decomposition
+This program has been divided into subproblems which will be solved in turn, this is known as decomposition.
+Each element can be solved independently, and the program can be built up from these subproblems.
+It makes sense to tackle these subproblems from their smallest parts and then build up the program from there.
 
-#### Handling Events
+#### Problem Recognition
+Each subproblem can be recognisable as a problem, which has previously been solved before.
+Problem recognition can clarify the problem and how it is possible to be solved by computational methods.
+It allows me to compare new problems to previously solved problems and see how they relate to each other and saves me from reinventing the wheel.
+For example, Java comes packaged with a data type which can store an image, which saves me making my own image class.
+
+<!--Describe the parts of the solution using algorithms justifying how these algorithms form a complete solution to the problem.-->
+#### GUI
+Creating the window is simply handled by the JavaFX framework.
+An object with the JFrame class is created, and within the main function its "setVisible" method is called to display a blank GUI.
+A size needs to be set, as it defaults to 0x0.
+The window is centered on the screen by settings its position relative to null, it defaults to the top left of the screen.
+The close operation needs to be set, which tells the program to end when the GUI is closed.
+```java 
+private static final JFrame FRAME = new JFrame("window title");
+
+public static void main(String[] args) {
+    FRAME.setSize(1000, 1000);
+    FRAME.setLocationRelativeTo(null);
+    FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    FRAME.setVisible(true);
+}
+```
+Drawing to the window is more challenging.
+The frame can be directly drawn to via its graphics library.
+However, drawing directly to the screen can cause flickering between frames, which is undesirable.
+The solution is to draw to create a buffer of the window and draw to the buffer.
+When the buffer is ready to be displayed, the buffer is drawn to the screen.
+The below code is an example code for drawing a moving rectangle to the screen.
+```java
+private static BufferStrategy getBufferStrategy() {
+    FRAME.createBufferStrategy(2);
+    return FRAME.getBufferStrategy();
+}
+private static Graphics2D getGraphics() {
+    return (Graphics2D) getBufferStrategy().getDrawGraphics();
+}
+
+private static void drawLoop() {
+    while (true) {
+        getGraphics().drawRect((int) System.currentTimeMillis() % (FRAME.getWidth()-100), (int) System.currentTimeMillis() % (FRAME.getHeight()-100), 100, 100);
+        getBufferStrategy().show();
+    }
+}
+```
+With just these steps, we can now already draw all the GUI needed with relative ease.
+I believe it makes most sense to draw the canvas first, as it should be drawn below other parts of the interface, drawing it first allows for us to draw over it later.
+Inputs should be able to modify the canvas, so those transformations should be undone before rendering other UI elements.
+The toolbar can then be drawn on top of the canvas.
+Below is an example code to draw a toolbar and a canvas.
+```java
+public static void drawUI() {
+    drawCanvas();
+    drawToolbar();
+}
+
+private static void drawCanvas() {
+    Graphics2D g = getGraphics();
+
+    // save the default transform so we can restore it later
+    AffineTransform defaultTransform = g.getTransform();
+    
+    // move the canvas to where it should be drawn, these variables can be modified by the user
+    g.translate(CANVAS_X, CANVAS_Y);
+    g.scale(CANVAS_SCALE_X, CANVAS_SCALE_Y);
+
+    // draw 500x500 rect, it will be scaled and translated to the correct position by the library.
+    g.drawRect(0, 0, 500, 500);
+    
+    // restore the default transform
+    g.setTransform(defaultTransform);
+}
+
+private static void drawToolbar() {
+    // draws a rectangle which is 100 pixels high and fills the entire width of the frame
+    getGraphics().drawRect(0, 0, FRAME.getWidth(), 100);
+}
+```
+
+#### Handling Inputs
+Inputs to the GUI can be easily handled by the JavaFX framework.
+When the GUI is created, append a listener for the mouse/keyboard events.
+This is done by creating a class which extends the MouseListener/KeyListener interfaces.
+The listener will then be called when the event occurs.
+Below is an example of a listener which prints the coordinates of the mouse when it is clicked.
+```java
+public class MouseListener implements java.awt.event.MouseListener {
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        System.out.println("Mouse clicked at: " + e.getX() + ", " + e.getY());
+    }
+}
+```
+The mouse listener will need to keep track of the current state of the UI.
+For the keyboard listener, keys such as CTRL+Z will need to be fed a previous state of the UI to restore.
+CTRL+V will need to access the clipboard, and CTRL+A will need to select the image.
+Each of these keybinds needs access to the state of the canvas, so the canvas state should be a global variable.
 
 #### Manipulating Images
+Manipulating images can be done by using the Java ImageIO library.
+This library allows for the reading and writing of images in a variety of formats.
+Reading images is required for editing pre-existing images, and writing images is required for saving images.
+The library also allows for the manipulation of images, such as drawing, scaling, cropping, rotating and drawing.
+Below is an example of how to draw to an image. The image fed to the function will have a rectangle drawn to it.
+```java
+public static void drawRectToImage(BufferedImage image, int x, int y, int width, int height) {
+    Graphics2D g = image.createGraphics();
+    g.setColor(Color.RED);
+    g.fillRect(x, y, width, height);
+    g.dispose();
+}
+```
+The following code can then save the resulting image to a file.
+```java
+public static void saveImage(BufferedImage image) throws IOException {
+    ImageIO.write(image, "png", new File("image.png"));
+}
+```
 
-#### Saving Images
+With just these small steps, it is already possible to create a UI, handle an input, manipulate an image and output the modified image.
 
-#### Controls
+<!--TODO: Describe usability features to be included in the solution-->
 
-### Algorithms
-[cool pseudocode or smth]
+## Key Variables
+<!--Identify key variables / data structures / classes justifying choices and any necessary validation.-->
+| Variable         | Type                            | Description                                                        |
+|:-----------------|:--------------------------------|:-------------------------------------------------------------------|
+| `FRAME`          | `JFrame`                        | The frame which is drawn to                                        |
+| `g`              | `Graphics2D`                    | The graphics context of the canvas, allows us to draw to the image |
+| `CANVAS_X`       | `int`                           | The x position of the canvas.                                      |
+| `CANVAS_Y`       | `int`                           | The y position of the canvas.                                      |
+| `CANVAS_SCALE_X` | `double`                        | The x scale of the canvas.                                         |
+| `CANVAS_SCALE_Y` | `double`                        | The y scale of the canvas.                                         |
+| `CANVAS_IMAGE`   | `BufferedImage`                 | The image being manipulated.                                       |
+| `MouseListener`  | `class extending MouseListener` | Class listening for and responding to mouse inputs                 |
+| `KeyListener`    | `class extending KeyListener`   | Class listening for and responding to key inputs                   |
 
 ## Testing
-[table of test, explanation, and expected result]
+<!--Identify the test data to be used during the iterative development and post-development phases and justify the choice of this test data.-->
+| Test Data                     | Reason                                                                          |
+|:------------------------------|:--------------------------------------------------------------------------------|
+| Large Image                   | Test RAM usage and performance of the program                                   |
+| Small Image                   | Test the program's ability to handle scaling small images to be drawable on     |
+| CTRL+Z with no undo history   | Tests if the program handles the history being a null pointer                   |
+| Clicking outside image bounds | Tests if the program correctly handles the mouse being outside the image bounds |
+| CTRL+V with invalid clipboard | Tests if the program handles the clipboard being a null pointer                 |
 
 # Development
 ## Iterative Development Process
