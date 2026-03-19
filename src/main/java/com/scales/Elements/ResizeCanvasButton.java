@@ -1,21 +1,24 @@
 package com.scales.Elements;
 
 import com.scales.Main;
+import com.scales.Utils.MouseUtil;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
 public class ResizeCanvasButton extends Element {
     public ResizeCanvasButton() {
-        super(495, 495, 10, 10);
+        super(500, 500, 10, 10);
     }
 
     @Override
     public void draw(Graphics2D g) {
         updatePosition();
 
-        g.setColor(Color.BLACK);
+        g.setColor(Color.WHITE);
         g.fillRect(0, 0, width, height);
+        g.setColor(Color.BLACK);
+        g.drawRect(0, 0, width, height);
     }
 
     @Override
@@ -37,7 +40,7 @@ public class ResizeCanvasButton extends Element {
     }
 
     private void updatePosition() {
-        this.x = Main.CANVAS.x+Main.CANVAS.width - (this.width / 2);
-        this.y = Main.CANVAS.y+Main.CANVAS.height - (this.height / 2);
+        this.x = Main.CANVAS.undoTransform(Main.CANVAS.width);
+        this.y = Main.CANVAS.undoTransform(Main.CANVAS.height);
     }
 }

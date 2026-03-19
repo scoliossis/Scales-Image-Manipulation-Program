@@ -704,7 +704,7 @@ public class ResizeCanvasButton extends Element {
 Canvas.resizeCanvas was created too which is shown below:
 ```java
 public void resizeCanvas(int width, int height) {
-    // store old image so it can be redrawn to the new resized image.
+    // store the old image so it can be redrawn to the new resized image.
     BufferedImage oldImage = CANVAS_IMAGE;
     IMAGE_GRAPHICS.dispose();
 

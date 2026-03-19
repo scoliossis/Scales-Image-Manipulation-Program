@@ -7,6 +7,7 @@ import java.util.Comparator;
 
 public abstract class Element {
     public int x, y, width, height;
+    public double scale = 1;
 
     public Element(int x, int y, int width, int height) {
         this.x = x;
@@ -21,4 +22,12 @@ public abstract class Element {
     public abstract boolean handleClick(MouseEvent e);
     public abstract boolean handleDrag(MouseEvent e);
     public abstract boolean handleHover(MouseEvent e);
+
+    public int applyTransform(int n) {
+        return (int) (n / this.scale) - (this.x);
+    }
+
+    public int undoTransform(int n) {
+        return (int) (n * this.scale) + (this.x);
+    }
 }
