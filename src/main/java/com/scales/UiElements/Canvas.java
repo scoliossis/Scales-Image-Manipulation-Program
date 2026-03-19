@@ -18,6 +18,7 @@ public class Canvas {
         g.translate(CANVAS_X, CANVAS_Y);
         g.scale(CANVAS_SCALE, CANVAS_SCALE);
 
+        g.drawRect(0, 0, CANVAS_IMAGE.getWidth(), CANVAS_IMAGE.getHeight());
         g.drawImage(CANVAS_IMAGE, 0, 0, null);
 
         g.setTransform(currentTransform);

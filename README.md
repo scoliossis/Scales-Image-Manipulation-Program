@@ -293,7 +293,9 @@ With just these small steps, it is already possible to create a UI, handle an in
 
 # Development
 ## Iterative Development Process
-### GUI
+### Prototype 1
+
+#### GUI
 The first stage of development is creating a GUI which I can draw to.
 In Main.java I created a global constant which of the GUI 
 ```java
@@ -346,9 +348,10 @@ private static void drawLoop() {
 }
 ```
 This leaves us with a GUI which looks like this.
+
 ![guiCreated.png](repo/guiCreated.png)
 
-### Canvas
+#### Canvas
 To draw a canvas, we create a BufferedImage.
 ```java
 public static BufferedImage CANVAS_IMAGE = new BufferedImage(FRAME.getWidth(), FRAME.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -381,6 +384,96 @@ public static void drawCanvas() {
 ```
 Now the GUI will display the drawing held in the BufferedImage CANVAS_IMAGE every 50 milliseconds.
 The image cannot yet be edited, however.
+
+#### Mouse Inputs
+For the program to listen for the mouse dragging across the screen, the JFrame requires a MouseMotionListener.
+```java
+private static void initialiseGUI() {
+    // ...
+    
+    FRAME.addMouseMotionListener(new MouseMotionListener());
+}
+```
+The MouseMotionListener class is shown below. When the mouse is dragged, the pixel at the mouse's position is set to red.
+```java
+public class MouseMotionListener extends MouseAdapter {
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        Canvas.IMAGE_GRAPHICS.setColor(Color.RED);
+        Canvas.IMAGE_GRAPHICS.fillRect(e.getX(), e.getY(), 1, 1);
+    }
+}
+```
+This works fine when the mouse is dragged slowly, as shown below:
+
+![mouseDraggedSlowly.png](repo/mouseDraggedSlowly.png)
+
+However, when the mouse is moved quickly, there are clear gaps:
+
+![clearGaps.png](repo/clearGaps.png)
+
+This happens because the mouseDragged MouseEvent is not called for each pixel the mouse has moved.
+The event is called when a change is detected in the mouse movement.
+With a high DPI mouse, it is possible to move the mouse more than a pixel before the listeners detects the movement, causing the holes.
+To fix this issue, I store the position of the previous mouse movement, and draw a line from the previous position to the current position.
+```java
+private static int lastX, lastY;
+public void mouseDragged(MouseEvent e) {
+    // ...
+    lastX = e.getX(); lastY = e.getY();
+}
+```
+This fixes the issue, and the line is now drawn smoothly.
+
+![smoothLine.png](repo/smoothLine.png)
+
+However, the lastX and lastY variables are not unset when the mouse is released.
+This means that upon next pressing the mouse, the line interpolates from the previous.
+This is also most visible as lastX and lastY default to 0, causing the first line to interpolate from 0,0 as shown below.
+
+![lineConnectsFrom00.png](repo/lineConnectsFrom00.png)
+
+To fix this, we need to know if this is the first frame of the mouse being pressed, and if it is, do not interpolate it.
+This requires knowing when the mouse is released and setting the values to -1,-1 to indicate that they should not interpolate.
+To do this, I created a MouseListener which notifies the program when the mouse is released, as shown below.
+```java
+public class MouseListener extends MouseAdapter {
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        MouseMotionListener.setLastMouseDragX(-1);
+        MouseMotionListener.setLastMouseDragY(-1);
+    }
+}
+```
+Then in the MouseMotionListener, I use encapsulation to allow MouseListener to access the private lastX and lastY variables.
+The variables have been appropriately renamed due to their scope increasing, requiring more specific names.
+I also changed their default values to -1, -1 to indicate that they should not interpolate.
+```java
+@Setter private static int lastMouseDragX = -1, lastMouseDragY = -1;
+```
+I then handle drawing the line as shown below
+```java
+public void mouseDragged(MouseEvent e) {
+    // ...
+    Canvas.IMAGE_GRAPHICS.drawLine(
+            // if lastMouseDragX and lastMouseDragY are -1, then this is the first frame of the mouse being pressed
+            lastMouseDragX == -1 ? e.getX() : lastMouseDragX,
+            lastMouseDragY == -1 ? e.getY() : lastMouseDragY,
+            e.getX(),
+            e.getY()
+    );
+    // ...
+}
+```
+This allows for the mouse to draw smooth lines to a canvas, as shown below.
+
+![smileyFace.png](repo/smileyFace.png)
+
+This concludes my first prototype as I believe this is a good starting point, but some systems already need to be improved upon.
+
+### Prototype 2
+Beginning this prototype, the GUI initialisation code is fine for now and so is the idea of the canvas.
+However, significant changes will be made to the input handling through this prototype.
 
 ## Testing to Inform Development
 [annotated evidence for testing!? and show "remedial" actions taken (how fancy)]

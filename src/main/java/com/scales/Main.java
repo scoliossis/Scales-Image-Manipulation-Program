@@ -1,5 +1,7 @@
 package com.scales;
 
+import com.scales.Listeners.MouseListener;
+import com.scales.Listeners.MouseMotionListener;
 import com.scales.UiElements.Canvas;
 
 import javax.swing.*;
@@ -28,10 +30,13 @@ public class Main {
         FRAME.setVisible(true);
         // create a frame buffer, which will be drawn to as opposed to drawing directly to the screen
         FRAME.createBufferStrategy(3);
+
+        FRAME.addMouseMotionListener(new MouseMotionListener());
+        FRAME.addMouseListener(new MouseListener());
     }
 
     // constant value for time between frames being rendered
-    private static final int FRAME_TIME_GAP = 50;
+    private static final int FRAME_TIME_GAP = 5;
     // variable to save the time the last frame was drawn at
     private static long lastFrameMS = 0;
 
