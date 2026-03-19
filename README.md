@@ -270,17 +270,16 @@ With just these small steps, it is already possible to create a UI, handle an in
 
 ## Key Variables
 <!--Identify key variables / data structures / classes justifying choices and any necessary validation.-->
-| Variable         | Type                            | Description                                                        |
-|:-----------------|:--------------------------------|:-------------------------------------------------------------------|
-| `FRAME`          | `JFrame`                        | The frame which is drawn to                                        |
-| `g`              | `Graphics2D`                    | The graphics context of the canvas, allows us to draw to the image |
-| `CANVAS_X`       | `int`                           | The x position of the canvas.                                      |
-| `CANVAS_Y`       | `int`                           | The y position of the canvas.                                      |
-| `CANVAS_SCALE_X` | `double`                        | The x scale of the canvas.                                         |
-| `CANVAS_SCALE_Y` | `double`                        | The y scale of the canvas.                                         |
-| `CANVAS_IMAGE`   | `BufferedImage`                 | The image being manipulated.                                       |
-| `MouseListener`  | `class extending MouseListener` | Class listening for and responding to mouse inputs                 |
-| `KeyListener`    | `class extending KeyListener`   | Class listening for and responding to key inputs                   |
+| Variable        | Type                            | Description                                                        |
+|:----------------|:--------------------------------|:-------------------------------------------------------------------|
+| `FRAME`         | `JFrame`                        | The frame which is drawn to                                        |
+| `MouseListener` | `class extending MouseListener` | Class listening for and responding to mouse inputs                 |
+| `KeyListener`   | `class extending KeyListener`   | Class listening for and responding to key inputs                   |
+| `g`             | `Graphics2D`                    | The graphics context of the canvas, allows us to draw to the image |
+| `CANVAS_IMAGE`  | `BufferedImage`                 | The image being manipulated.                                       |
+| `CANVAS_X`      | `int`                           | The x position of the canvas.                                      |
+| `CANVAS_Y`      | `int`                           | The y position of the canvas.                                      |
+| `CANVAS_SCALE`  | `double`                        | The scale of the canvas.                                           |
 
 ## Testing
 <!--Identify the test data to be used during the iterative development and post-development phases and justify the choice of this test data.-->
@@ -294,7 +293,94 @@ With just these small steps, it is already possible to create a UI, handle an in
 
 # Development
 ## Iterative Development Process
-[Subheadings TBD, show all the code under relevant subheadings]
+### GUI
+The first stage of development is creating a GUI which I can draw to.
+In Main.java I created a global constant which of the GUI 
+```java
+private static final JFrame FRAME = new JFrame();
+```
+When the program is run, I initalise the GUI with the "initialiseGUI" function shown below
+```java
+private static void initialiseGUI() {
+    // frame size
+    FRAME.setSize(1000, 500);
+    // centres frame on screen
+    FRAME.setLocationRelativeTo(null);
+    // closes the program when the window is closed
+    FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    // makes the frame visible
+    FRAME.setVisible(true);
+    // create a frame buffer, which will be drawn to as opposed to drawing directly to the screen
+    FRAME.createBufferStrategy(2);
+}
+```
+Then I call the main draw loop. The code below draws a moving rectangle to the screen at 60 frames per second.
+```java
+// constant value for time between frames being rendered
+private static final int FRAME_TIME_GAP = 50;
+// variable to save the time the last frame was drawn at
+private static long lastFrameMS = 0;
+
+private static void drawLoop() {
+    BufferStrategy bufferStrategy = FRAME.getBufferStrategy();
+    
+    while (true) {
+        // drawing the program with a frame cap makes the program run smoother than attempting to draw every frame
+        if (System.currentTimeMillis() - lastFrameMS < FRAME_TIME_GAP) continue;
+        // create graphics
+        g = (Graphics2D) bufferStrategy.getDrawGraphics();
+        
+        // reset screen
+        g.clearRect(0, 0, FRAME.getWidth(), FRAME.getHeight());
+        // filler rendering, to test if it is working
+        g.fillRect((int) System.currentTimeMillis() % (FRAME.getWidth()-100), (int) System.currentTimeMillis() % (FRAME.getHeight()-100), 100, 100);
+        
+        // the drawing is finished, display the buffer
+        bufferStrategy.show();
+        // dispose of graphics from this buffer to free up its memory
+        g.dispose();
+        
+        // save time the frame is drawn at
+        lastFrameMS = System.currentTimeMillis();
+    }
+}
+```
+This leaves us with a GUI which looks like this.
+![guiCreated.png](repo/guiCreated.png)
+
+### Canvas
+To draw a canvas, we create a BufferedImage.
+```java
+public static BufferedImage CANVAS_IMAGE = new BufferedImage(FRAME.getWidth(), FRAME.getHeight(), BufferedImage.TYPE_INT_ARGB);
+```
+We can then draw this image within the draw loop.
+```java
+private static void drawLoop() {
+    // ...
+    g.drawImage(CANVAS_IMAGE, 0, 0, null);
+    // ...
+}
+```
+For future use, I have created variables which control where the canvas is drawn at.
+```java
+public static int CANVAS_X, CANVAS_Y;
+public static double CANVAS_SCALE = 1;
+
+public static void drawCanvas() {
+    // store previous transformations
+    AffineTransform currentTransform = g.getTransform();
+    g.translate(CANVAS_X, CANVAS_Y);
+    g.scale(CANVAS_SCALE, CANVAS_SCALE);
+    
+    // draw canvas
+    g.drawImage(CANVAS_IMAGE, 0, 0, null);
+
+    // restore previous transformations
+    g.setTransform(currentTransform);
+}
+```
+Now the GUI will display the drawing held in the BufferedImage CANVAS_IMAGE every 50 milliseconds.
+The image cannot yet be edited, however.
 
 ## Testing to Inform Development
 [annotated evidence for testing!? and show "remedial" actions taken (how fancy)]
