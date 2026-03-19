@@ -2,8 +2,6 @@ package com.scales.Elements;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Comparator;
 
 public abstract class Element {
     public int x, y, width, height;
@@ -23,11 +21,11 @@ public abstract class Element {
     public abstract boolean handleDrag(MouseEvent e);
     public abstract boolean handleHover(MouseEvent e);
 
-    public int applyTransform(int n) {
-        return (int) (n / this.scale) - (this.x);
+    public int applyTransform(int n, int offset) {
+        return (int) ((n / this.scale) - (offset / this.scale));
     }
 
-    public int undoTransform(int n) {
-        return (int) (n * this.scale) + (this.x);
+    public int undoTransform(int n, int offset) {
+        return (int) (n * this.scale) + offset;
     }
 }

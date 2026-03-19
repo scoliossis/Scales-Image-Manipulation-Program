@@ -11,7 +11,6 @@ public class MouseListener extends MouseAdapter {
     @Override
     public void mouseReleased(MouseEvent e) {
         MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = null;
-        MouseMotionListener.lastMouseDragX = MouseMotionListener.lastMouseDragY = -1;
     }
 
     @Override
@@ -21,6 +20,8 @@ public class MouseListener extends MouseAdapter {
             // breaks out of the loop if the element currently hovered wants to stop other elements from handling the click event
             if (MouseUtil.isMouseHovering(e, element)) {
                 if (!setDraggingElement) {
+                    MouseMotionListener.lastMouseDragX = e.getX();
+                    MouseMotionListener.lastMouseDragY = e.getY();
                     MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = element;
                     setDraggingElement = true;
                 }

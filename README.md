@@ -292,10 +292,9 @@ With just these small steps, it is already possible to create a UI, handle an in
 | CTRL+V with invalid clipboard | Tests if the program handles the clipboard being a null pointer                 |
 
 # Development
-## Iterative Development Process
-### Prototype 1
+## Prototype 1
 
-#### GUI
+### GUI
 The first stage of development is creating a GUI which I can draw to.
 In Main.java I created a global constant which of the GUI 
 ```java
@@ -351,7 +350,7 @@ This leaves us with a GUI which looks like this.
 
 ![guiCreated.png](repo/guiCreated.png)
 
-#### Canvas
+### Canvas
 To draw a canvas, we create a BufferedImage.
 ```java
 public static BufferedImage CANVAS_IMAGE = new BufferedImage(FRAME.getWidth(), FRAME.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -385,7 +384,7 @@ public static void drawCanvas() {
 Now the GUI will display the drawing held in the BufferedImage CANVAS_IMAGE every 50 milliseconds.
 The image cannot yet be edited, however.
 
-#### Mouse Inputs
+### Mouse Inputs
 For the program to listen for the mouse dragging across the screen, the JFrame requires a MouseMotionListener.
 ```java
 private static void initialiseGUI() {
@@ -471,12 +470,12 @@ This allows for the mouse to draw smooth lines to a canvas, as shown below.
 
 This concludes my first prototype as I believe this is a good starting point, but some systems already need to be improved upon.
 
-### Prototype 2
+## Prototype 2
 Beginning this prototype, the GUI initialisation code is fine for now, and so is the idea of the canvas.
 However, significant changes will be made to the input handling through this prototype.
 Object-orientated programming is perfect for a program like this.
 
-#### Element Class
+### Element Class
 Instead of the Canvas class being its own stand-alone class, it should extend a parent Element class.
 The element class will hold all GUI elements which need to be drawn and clicked.
 With this in mind, the element class is shown below:
@@ -538,7 +537,9 @@ public class Canvas extends Element {
 
     @Override
     public boolean handleClick(MouseEvent e) {
-        return false;
+        Canvas.CANVAS_IMAGE.setRGB(e.getX(), e.getY(), Color.RED.getRGB());
+
+        return true;
     }
 
     @Override
@@ -657,9 +658,35 @@ public void mousePressed(MouseEvent e) {
     }
 }
 ```
-With all these changes made to the Canvas class, the functionality of the program is the same, with the code now much more robust.
+With all these changes made to the Canvas class, the functionality of the program should be the same, with the code now much more robust.
+However, when implementing the handleClick function, I found a bug; when clicking on the furtherest right pixel of the canvas, an error was printed to the console.
 
-#### Resizing the canvas
+![coordinateOutOfBounds1.png](repo/coordinateOutOfBounds1.png)
+
+By following the stack trace, I found the origin of the error.
+```java
+public boolean handleClick(MouseEvent e) {
+    Canvas.CANVAS_IMAGE.setRGB(e.getX(), e.getY(), Color.RED.getRGB()); // <------- this line
+    // ...
+}
+```
+This causes an error because the mouse X can be outside the bounds of the canvas picture.
+It can be out of bounds as the mouse X is compared to the width of the element, which is 1 larger than the images' width.
+This can be fixed by changing the isHovered to not allow "<=", but instead "<".
+However, I prefer to fix it by checking if the coordinate is in bounds as so because it is more robust and easier to understand.
+The fixed handleClick function is now shown below:
+```java
+@Override
+public boolean handleClick(MouseEvent e) {
+    if (e.getX() >= 0 && e.getX() < CANVAS_IMAGE.getWidth() && e.getY() >= 0 && e.getY() < CANVAS_IMAGE.getHeight()) {
+        Canvas.CANVAS_IMAGE.setRGB(e.getX(), e.getY(), Color.RED.getRGB());
+    }
+    
+    // ...
+}
+```
+
+### Resizing the canvas
 To test the new Element class, I decided to make the Canvas resizable.
 With the Element clas it was made incredibly simple to change the mouse cursor and change the size of the canvas.
 From what could have been 100+ lines of code, to what is shown below:
@@ -716,10 +743,211 @@ public void resizeCanvas(int width, int height) {
 }
 ```
 Below is a screenshot of me hovering the resize button.
+
 ![resizeButtonWow.png](repo/resizeButtonWow.png)
 
-## Testing to Inform Development
-[annotated evidence for testing!? and show "remedial" actions taken (how fancy)]
+However, this does cause an uncaught exception.
+Shown below is the stack trace:
+
+![illegalImageResize.png](repo/illegalImageResize.png)
+
+When the resize button is dragged above or to the left of the edge of the screen, the resize value passed becomes negative.
+This is simply fixed by only resizing the canvas if the new width and height are both more than 0, as described by the error message.
+This fix was implemented as below, it sets width to the highest amount out of width and 1, and idem for height:
+```java
+public void resizeCanvas(int width, int height) {
+    width = Math.max(width, 1);
+    height = Math.max(height, 1);
+    // ...
+}
+```
+
+### Fixing Transformations
+When transformations such as translation are applied to an Element, it causes the position interacted from to be wrong.
+For fixing the interacted position, I created a new function shown below which is called when handling mouse clicks
+```java
+public int applyTransform(int n, int offset) {
+    return (int) (n / this.scale) - offset;
+}
+```
+So Canvas' handleDrag function changes to:
+```java
+public boolean handleDrag(MouseEvent e) {
+    // ...
+    Canvas.IMAGE_GRAPHICS.drawLine(
+            this.applyTransform(MouseMotionListener.lastMouseDragX),
+            this.applyTransform(MouseMotionListener.lastMouseDragY),
+            this.applyTransform(e.getX()),
+            this.applyTransform(e.getY())
+    );
+    // ...
+}
+```
+And for the resize canvas button, I need to apply these transformations when resizing the canvas:
+```java
+public void resizeCanvas(int width, int height) {
+    // ...
+    int newWidth = Math.max(this.applyTransform(width, this.x), 1);
+    int newHeight = Math.max(this.applyTransform(height, this.y), 1);
+    CANVAS_IMAGE = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+    // ...
+    this.width = newWidth;
+    this.height = newHeight;
+}
+```
+as well as undo them when updating the position of the resize button:
+```java
+private void updatePosition() {
+    this.x = Main.CANVAS.undoTransform(Main.CANVAS.width, Main.CANVAS.x);
+    this.y = Main.CANVAS.undoTransform(Main.CANVAS.height, Main.CANVAS.y);
+}
+```
+Which requires a new undoTransform function in Element:
+```java
+public int undoTransform(int n, int offset) {
+    return (int) (n * this.scale) + offset;
+}
+```
+These functions also fix the newly added "scale" variable, which I plan to use to add zooming in/out to the canvas.
+
+### Applying Transformations
+Currently, the canvas cannot be translated, scaled or rotated, which are the three cardinal transformations.
+To modify translation upon the y-axis, I will need an event which is posted when the mouse wheel is scrolled.
+In Main.java the initialiseGUI function is updated to register this new listener:
+```java
+private static void initialiseGUI() {
+    // ...
+    FRAME.addMouseWheelListener(new MouseWheelListener());
+}
+```
+And then I need to make a MouseWheelListener class as so:
+```java
+public class MouseWheelListener implements java.awt.event.MouseWheelListener {
+    private static final int SCALE_INCREMENT = 10;
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        // scrolls the canvas when the mouse wheel is scrolled
+        Main.CANVAS.y += e.getUnitsToScroll() * SCALE_INCREMENT;
+    }
+}
+```
+This allows me to scroll my canvas up and down, which is a nice feature.
+Generally, holding SHIFT while scrolling makes it scroll on the x-axis, so for that we need to monitor key presses.
+```java
+private static void initialiseGUI() {
+    // ...
+    FRAME.addKeyListener(new KeyListener());
+}
+```
+And then we need this class to allow other classes to know which keys are currently pressed.
+This can be done using a HashMap as it has a constant time complexity for adding, removing and getting an element.
+This isn't necessarily faster, as the number of keys pressed is usually a single digit and the computation time of adding to a hashmap is longer than a simple array.
+However, the syntax of HashMap is more readable, as well as it ensuring no duplicate keys are added.
+```java
+public class KeyListener extends KeyAdapter {
+    private static final HashMap<Integer, Boolean> KEYS_PRESSED = new HashMap<>();
+    public static boolean isKeyDown(int keyCode) {
+        return KEYS_PRESSED.containsKey(keyCode);
+    }
+    
+    @Override
+    public void keyPressed(KeyEvent e) {
+        KEYS_PRESSED.put(e.getKeyCode(), true);
+    }
+    @Override
+    public void keyReleased(KeyEvent e) {
+        KEYS_PRESSED.remove(e.getKeyCode());
+    }
+}
+```
+This allows us to check if SHIFT is currently pressed and increment the x-axis if it is.
+```java
+public void mouseWheelMoved(MouseWheelEvent e) {
+    // scrolling just by "getUnitsToScroll" is very slow, so we multiply it by a constant
+    int scrollAmount = e.getUnitsToScroll() * SCALE_INCREMENT;
+    
+    if (KeyListener.isKeyDown(KeyEvent.VK_SHIFT)) Main.CANVAS.x += scrollAmount;
+    else Main.CANVAS.y += scrollAmount;
+}
+```
+Which allows us to position the canvas where-ever we want it.
+
+![weMovedTheCanvas.png](repo/weMovedTheCanvas.png)
+
+Adding scaling now is comically easy, if CTRL is held while scrolling, it should scale instead of scrolling.
+```java
+public void mouseWheelMoved(MouseWheelEvent e) {
+    if (KeyListener.isKeyDown(KeyEvent.VK_CONTROL)) {
+        Main.CANVAS.scale -= e.getUnitsToScroll() / 10f;
+        // makes sure the scale isn't too small/big
+        Main.CANVAS.scale = Math.clamp(Main.CANVAS.scale, 0.1f, 30);
+    }
+    // ...
+}
+```
+This allows us to zoom in and see each pixel as shown below:
+
+![zoomedInHappy.png](repo/zoomedInHappy.png)
+
+However, this zooming is not very user-friendly.
+The first glaring issue was easily fixable, it was too slow.
+The second issue was that it always zoomed in centered on the top left of the canvas.
+This was not so easily fixed, however, I believe my solution is intuitive.
+When zooming in, the pixel your mouse is hovering, is the same as before zooming in.
+This is calculated by offsetting the canvas x and y by the formula shown below:
+
+`pos = mousePos - ((mousePos - pos) * scaleDifference)`
+
+The finished scrolling ended up as:
+```java
+public void mouseWheelMoved(MouseWheelEvent e) {
+    // ...
+    // store old scale
+    double oldScale = Main.CANVAS.scale;
+
+    Main.CANVAS.scale -= e.getUnitsToScroll() / 5f;
+    Main.CANVAS.scale = Math.clamp(Main.CANVAS.scale, 0.1f, 30);
+
+    double scaleFactor = Main.CANVAS.scale / oldScale;
+    // make sure that the pixel the mouse is over is the same after zooming in
+    Main.CANVAS.x = (int) (e.getX() - ((e.getX() - Main.CANVAS.x) * scaleFactor));
+    Main.CANVAS.y = (int) (e.getY() - ((e.getY() - Main.CANVAS.y) * scaleFactor));
+    // ...
+}
+```
+Which results in much smoother zooming in.
+Below are pictures from before and after zooming in, without moving the mouse:
+
+![beforeZooming.png](repo/beforeZooming.png)
+![afterZooming.png](repo/afterZooming.png)
+
+As a final fix of this prototype, when clicking, the "lastMouseDragX" and "lastMouseDragY" variables are still at -1.
+If the mouse is moving while clicked, this causes there to be a dot where first clicked, and a gap because it takes 1 frame to start interpolating.
+The error is shown below:
+
+![morseCodeIg.png](repo/morseCodeIg.png)
+
+This is easily fixed by setting the "lastMouseDragX" and "lastMouseDragY" on mouse click, and removing setting them to -1 on release.
+```java
+public void mouseReleased(MouseEvent e) {
+    MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = null;
+    // removed resetting lastMouseDragX and lastMouseDragY to -1
+}
+
+public void mousePressed(MouseEvent e) {
+    // ...
+    MouseMotionListener.lastMouseDragX = e.getX();
+    MouseMotionListener.lastMouseDragY = e.getY();
+    MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = element;
+    // ...
+}
+```
+
+This concludes prototype 2; I believe it is possible to easily shape this prototype into a fully functional program.
+The Element class allows me to easily add new elements to the GUI, which should make it easy to add new features.
+The listener classes implemented provide useful utilities for developing future features.
+And using the JavaFX graphics library allows me to easily add complex features such as antialiasing and drawing circles.
 
 # Evaluation
 ## Testing to Inform Evaluation

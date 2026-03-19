@@ -1,10 +1,13 @@
 package com.scales;
 
+import com.scales.Elements.Canvas;
 import com.scales.Elements.Element;
 import com.scales.Elements.ResizeCanvasButton;
+import com.scales.Listeners.KeyListener;
 import com.scales.Listeners.MouseListener;
 import com.scales.Listeners.MouseMotionListener;
-import com.scales.Elements.Canvas;
+import com.scales.Listeners.MouseWheelListener;
+import lombok.Setter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,6 +49,8 @@ public class Main {
 
         FRAME.addMouseMotionListener(new MouseMotionListener());
         FRAME.addMouseListener(new MouseListener());
+        FRAME.addMouseWheelListener(new MouseWheelListener());
+        FRAME.addKeyListener(new KeyListener());
     }
 
     // constant value for time between frames being rendered
@@ -53,10 +58,12 @@ public class Main {
     // variable to save the time the last frame was drawn at
     private static long lastFrameMS = 0;
 
+    @Setter private static boolean running = true;
+
     private static void drawLoop() {
         BufferStrategy bufferStrategy = FRAME.getBufferStrategy();
 
-        while (true) {
+        while (running) {
             // drawing the program with a frame cap makes the program run smoother than attempting to draw every frame
             if (System.currentTimeMillis() - lastFrameMS < FRAME_TIME_GAP) continue;
 
@@ -69,6 +76,7 @@ public class Main {
             ELEMENTS.forEach(e -> {
                 AffineTransform currentTransform = FRAME_GRAPHICS.getTransform();
                 FRAME_GRAPHICS.translate(e.x, e.y);
+                FRAME_GRAPHICS.scale(e.scale, e.scale);
 
                 e.draw(FRAME_GRAPHICS);
 

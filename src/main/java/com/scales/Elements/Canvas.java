@@ -1,8 +1,6 @@
 package com.scales.Elements;
 
 import com.scales.Listeners.MouseMotionListener;
-import com.scales.Main;
-import com.scales.Utils.MouseUtil;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -21,8 +19,6 @@ public class Canvas extends Element {
 
     @Override
     public void draw(Graphics2D g) {
-        g.scale(this.scale, this.scale);
-
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, CANVAS_IMAGE.getWidth(), CANVAS_IMAGE.getHeight());
         g.drawImage(CANVAS_IMAGE, 0, 0, null);
@@ -30,19 +26,23 @@ public class Canvas extends Element {
 
     @Override
     public boolean handleClick(MouseEvent e) {
-        return false;
+        int x = this.applyTransform(e.getX(), this.x);
+        int y = this.applyTransform(e.getY(), this.y);
+        if (x >= 0 && x < CANVAS_IMAGE.getWidth() && y >= 0 && y < CANVAS_IMAGE.getHeight()) {
+            Canvas.CANVAS_IMAGE.setRGB(x, y, Color.RED.getRGB());
+        }
+
+        return true;
     }
 
     @Override
     public boolean handleDrag(MouseEvent e) {
-        if (MouseMotionListener.lastMouseDragX == -1) return false;
-
         Canvas.IMAGE_GRAPHICS.setColor(Color.RED);
         Canvas.IMAGE_GRAPHICS.drawLine(
-                this.applyTransform(MouseMotionListener.lastMouseDragX),
-                this.applyTransform(MouseMotionListener.lastMouseDragY),
-                this.applyTransform(e.getX()),
-                this.applyTransform(e.getY())
+                this.applyTransform(MouseMotionListener.lastMouseDragX, this.x),
+                this.applyTransform(MouseMotionListener.lastMouseDragY, this.y),
+                this.applyTransform(e.getX(), this.x),
+                this.applyTransform(e.getY(), this.y)
         );
 
         return true;
@@ -58,8 +58,8 @@ public class Canvas extends Element {
         BufferedImage oldImage = CANVAS_IMAGE;
         IMAGE_GRAPHICS.dispose();
 
-        int newWidth = this.applyTransform(width);
-        int newHeight = this.applyTransform(height);
+        int newWidth = Math.max(this.applyTransform(width, this.x), 1);
+        int newHeight = Math.max(this.applyTransform(height, this.y), 1);
 
         CANVAS_IMAGE = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
         IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();

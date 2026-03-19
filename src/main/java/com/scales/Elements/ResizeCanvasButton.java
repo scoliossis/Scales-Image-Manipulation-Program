@@ -1,7 +1,6 @@
 package com.scales.Elements;
 
 import com.scales.Main;
-import com.scales.Utils.MouseUtil;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -23,7 +22,7 @@ public class ResizeCanvasButton extends Element {
 
     @Override
     public boolean handleClick(MouseEvent e) {
-        return false;
+        return true;
     }
 
     @Override
@@ -40,7 +39,7 @@ public class ResizeCanvasButton extends Element {
     }
 
     private void updatePosition() {
-        this.x = Main.CANVAS.undoTransform(Main.CANVAS.width);
-        this.y = Main.CANVAS.undoTransform(Main.CANVAS.height);
+        this.x = Main.CANVAS.undoTransform(Main.CANVAS.width, Main.CANVAS.x);
+        this.y = Main.CANVAS.undoTransform(Main.CANVAS.height, Main.CANVAS.y);
     }
 }
