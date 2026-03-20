@@ -389,7 +389,6 @@ For the program to listen for the mouse dragging across the screen, the JFrame r
 ```java
 private static void initialiseGUI() {
     // ...
-    
     FRAME.addMouseMotionListener(new MouseMotionListener());
 }
 ```
@@ -571,7 +570,6 @@ The draw function is called within Main.java's drawLoop function, shown below:
 ```java
 private static void drawLoop() {
     // ...
-
     // draw each element
     Canvas.elements.forEach(element -> {
         AffineTransform currentTransform = FRAME_GRAPHICS.getTransform();
@@ -582,7 +580,7 @@ private static void drawLoop() {
         FRAME_GRAPHICS.setTransform(currentTransform);
     });
     
-    // ..
+    // ...
 }
 ```
 And the handleDrag is handled by MouseMotionListener, as shown below:
@@ -681,7 +679,6 @@ public boolean handleClick(MouseEvent e) {
     if (e.getX() >= 0 && e.getX() < CANVAS_IMAGE.getWidth() && e.getY() >= 0 && e.getY() < CANVAS_IMAGE.getHeight()) {
         Canvas.CANVAS_IMAGE.setRGB(e.getX(), e.getY(), Color.RED.getRGB());
     }
-    
     // ...
 }
 ```
@@ -943,11 +940,400 @@ public void mousePressed(MouseEvent e) {
     // ...
 }
 ```
-
 This concludes prototype 2; I believe it is possible to easily shape this prototype into a fully functional program.
 The Element class allows me to easily add new elements to the GUI, which should make it easy to add new features.
 The listener classes implemented provide useful utilities for developing future features.
 And using the JavaFX graphics library allows me to easily add complex features such as antialiasing and drawing circles.
+
+
+## Prototype 3
+### Toolbar
+Having a toolbar which holds all the other cursor options is a good idea.
+I want the toolbar to constantly be the same width as the frame.
+For this I need a listener for when the frame is resized:
+```java
+public class ComponentListener extends ComponentAdapter {
+    @Override
+    public void componentResized(ComponentEvent e) {
+        Main.TOOLBAR.width = e.getComponent().getWidth();
+    }
+}
+```
+And of course, a Toolbar class:
+```java
+public class Toolbar extends Element {
+    public Toolbar() {
+        super(0, 0, Main.DEFAULT_FRAME_SIZE.width, 50);
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, width, height);
+    }
+    // ...
+}
+```
+Next, I decided changing the cursor while hovering the canvas was a nice touch, which was simply done by:
+```java
+public boolean handleHover(MouseEvent e) {
+    Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+    // ...
+}
+```
+However, this allowed me to find a bug, due to me resetting the cursor constantly, it flickers to the wrong cursor sometimes, while still hovering an element.
+This was easily fixed by only resetting the cursor if no element is hovered.
+```java
+private void handleMouseMoveEvent(MouseEvent e) {
+    for (Element element : Main.ELEMENTS.reversed()) {
+        // returns if we are hovering an element to stop the cursor being reset
+        if (MouseUtil.isMouseHovering(e, element) && element.handleHover(e)) return;
+    }
+    
+    // reset the cursor to the default cursor because no element is hovered
+    Main.FRAME.setCursor(Cursor.getDefaultCursor());
+}
+```
+Making the canvas start centered on the screen was another nice touch.
+```java
+public Canvas() {
+    // x, y, width, height
+    super(
+            Main.DEFAULT_FRAME_SIZE.width / 2 - DEFAULT_CANVAS_WIDTH / 2,
+            Main.DEFAULT_FRAME_SIZE.height / 2 - DEFAULT_CANVAS_HEIGHT / 2,
+            DEFAULT_CANVAS_WIDTH,
+            DEFAULT_CANVAS_HEIGHT
+    );
+}
+```
+The program now looks like this, with the toolbar being a placeholder:
+
+![newCursorAndCentered.png](repo/newCursorAndCentered.png)
+
+The first thing I want to add to the toolbar is buttons for the different cursor options.
+For this I will create an abstract Cursor class which subclasses can then extend to fill in the functions.
+```java
+public abstract class Cursor {
+    public final BufferedImage ICON;
+
+    public Cursor(BufferedImage ICON) {
+        this.ICON = ICON;
+    }
+    
+    public final Canvas PARENT = Main.CANVAS;
+    public BufferedImage getParentImage() {
+        return Canvas.CANVAS_IMAGE;
+    }
+    public Graphics2D getParentGraphics() {
+        return Canvas.IMAGE_GRAPHICS;
+    }
+
+    public abstract void handleClick(MouseEvent e);
+    public abstract void handleDrag(MouseEvent e);
+    public abstract void handleRelease(MouseEvent e);
+}
+```
+The first Cursor I implemented is the Pencil cursor, which is what I have been testing with:
+```java
+public class Pencil extends Cursor {
+    public Pencil() {
+        // todo: make icon
+        super(new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB));
+    }
+
+    @Override
+    public void handleClick(MouseEvent e) {
+        int x = PARENT.applyTransform(e.getX(), PARENT.x);
+        int y = PARENT.applyTransform(e.getY(), PARENT.y);
+        if (x >= 0 && x < getParentImage().getWidth() && y >= 0 && y < getParentImage().getHeight()) {
+            getParentImage().setRGB(x, y, Color.RED.getRGB());
+        }
+    }
+
+    @Override
+    public void handleDrag(MouseEvent e) {
+        Canvas.IMAGE_GRAPHICS.setColor(Color.RED);
+        Canvas.IMAGE_GRAPHICS.drawLine(
+                PARENT.applyTransform(MouseMotionListener.lastMouseDragX, PARENT.x),
+                PARENT.applyTransform(MouseMotionListener.lastMouseDragY, PARENT.y),
+                PARENT.applyTransform(e.getX(), PARENT.x),
+                PARENT.applyTransform(e.getY(), PARENT.y)
+        );
+    }
+
+    @Override
+    public void handleRelease(MouseEvent e) {
+
+    }
+}
+```
+And I added a paint brush cursor, which is the same, but with antialiasing:
+```java
+public class PaintBrush extends Cursor {
+    public PaintBrush() {
+        // todo: make icon
+        super(new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB));
+    }
+
+    @Override
+    public void handleClick(MouseEvent e) {
+        Main.PENCIL.handleClick(e);
+    }
+
+    @Override
+    public void handleDrag(MouseEvent e) {
+        getParentGraphics().setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Main.PENCIL.handleDrag(e);
+        getParentGraphics().setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+    }
+
+    @Override
+    public void handleRelease(MouseEvent e) {
+
+    }
+}
+```
+I added two cursors as I needed at least two to test if my toolbar allows me to switch between them.
+In the main file I need to create an array of the Cursor subclasses so that the toolbar can access them.
+I also need to store the current cursor, this allows the toolbar to render which cursor is currently selected.
+The currentCursor variable is also needed for the Canvas class to call the correct handleDraw/handleDrag/handleRelease functions.
+Below is how I initialise the array of cursors:
+```java
+public static final Pencil PENCIL = new Pencil();
+public static final PaintBrush PAINT_BRUSH = new PaintBrush();
+public static Cursor currentCursor = PAINT_BRUSH;
+
+public static final List<Cursor> CURSORS = List.of(
+        PENCIL,
+        PAINT_BRUSH
+);
+```
+In my toolbar class, I need to draw an icon for each cursor and also indicate which cursor is currently selected.
+This is simple enough to do; we first need to loop through the array of cursors.
+Using the index of the cursor, we can offset its x coordinate so that none overlap.
+For this I created a function "getIconX":
+```java
+private int getIconX(int i) {
+    return (ICON_SPACING+ICON_SIZE) * i + ICON_SPACING;
+}
+```
+For easier modification of code I created two constants and a supporting function which are used throughout the class to determine icon positions:
+```java
+private static final int ICON_SIZE = 50;
+private static final int ICON_SPACING = 10;
+
+private int getIconY() {
+    return (this.height - ICON_SIZE) / 2;
+}
+```
+The draw function is then simply done:
+```java
+public void draw(Graphics2D g) {
+    // ...
+    for (int i = 0; i < Main.CURSORS.size(); i++) {
+        Cursor cursor = Main.CURSORS.get(i);
+        // if the cursor box being drawn right now is the current cursor, its drawn darker.
+        g.setColor(Main.currentCursor == cursor ? Color.WHITE.darker() : Color.WHITE);
+        g.fillRect(getIconX(i), getIconY(), ICON_SIZE, ICON_SIZE);
+        g.drawImage(cursor.ICON, getIconX(i), getIconY(), ICON_SIZE, ICON_SIZE, null);
+    }
+}
+```
+Since the icons of each cursor are currently blank, the interface looks like this:
+
+![toolbarWITHicon.png](repo/toolbarWITHicon.png)
+
+The current hovered cursor is determined with a simple loop:
+```java
+private Cursor getHoveredCursor(MouseEvent e) {
+    for (int i = 0; i < Main.CURSORS.size(); i++) {
+        if (MouseUtil.isMouseHovering(e, getIconX(i), getIconY(), ICON_SIZE, ICON_SIZE)) {
+            return Main.CURSORS.get(i);
+        }
+    }
+    
+    return null;
+}
+```
+
+### Refactoring Positions
+Between features, I thought it makes more sense for each Element's transformations to be a lambda function.
+Previously we gave the constructor x,y,width,height and had to worry about updating these values when needed.
+Now, we simply pass a function as each parameter, and each time they are called, their position is checked again.
+Here are the changes to the element class:
+```java
+@RequiredArgsConstructor
+public abstract class Element {
+    @NonNull public IntSupplier x, y, width, height;
+    // ...
+}
+```
+Then new classes extending it create constructors such as:
+```java
+public Toolbar() {
+    super(
+            () -> 0,
+            () -> 0,
+            () -> Main.FRAME.getWidth(), // this variable would normally need to be updated somehow, instead it is updated when called.
+            () -> 75
+    );
+}
+```
+This saves time, makes the code more readable and runs faster.
+It is easier to follow the code when the rectangle can only be updated in one place.
+The code can run faster as each Element's rectangle is never updated unnecessarily.
+
+### Changing Colours
+Drawing with only red is not very interesting or helpful.
+For my program to have any use at all, I need to be able to change the colour of the cursor.
+This is not so easily done.
+First, I need to create a variable in Cursor which determines the colour each cursor will draw with:
+```java
+public static Color CURSOR_COLOR = Color.RED;
+```
+Next we need to create a colour picker element.
+I decided to split the colour picker into five separate elements.
+The first element is the button which opens and closes the colour picker.
+This element was simple to make:
+```java
+public class ColourPickerButton extends Element {
+    public boolean open = false;
+
+    public ColourPickerButton() {
+        super(
+                () -> Main.FRAME.getWidth() - Toolbar.ICON_SIZE - Toolbar.ICON_SPACING,
+                () -> Main.TOOLBAR.getIconY(),
+                () -> Toolbar.ICON_SIZE,
+                () -> Toolbar.ICON_SIZE
+        );
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        // draws the current colour
+        g.setColor(com.scales.Cursors.Cursor.CURSOR_COLOR);
+        g.fillRect(0, 0, width.getAsInt(), height.getAsInt());
+    }
+
+    @Override
+    public boolean handleClick(MouseEvent e) {
+        // open / close colour picking
+        Main.COLOUR_PICKER_BUTTON.open = !Main.COLOUR_PICKER_BUTTON.open;
+        return true;
+    }
+
+    @Override
+    public boolean handleDrag(MouseEvent e) {
+        return true;
+    }
+
+    @Override
+    public boolean handleHover(MouseEvent e) {
+        Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return true;
+    }
+}
+```
+The background of the colour picker expanded box was also simple to make:
+```java
+public class ColourPickerBackground extends Element {
+    public static final int BACKGROUND_Y = Main.TOOLBAR.getIconY() + Toolbar.ICON_SIZE;
+
+    public ColourPickerBackground() {
+        super(
+                () -> Main.COLOUR_PICKER_BUTTON.x.getAsInt() - BOX_DIAMETER,
+                () -> BACKGROUND_Y,
+                () -> BOX_DIAMETER,
+                () -> BOX_DIAMETER
+        );
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        if (!Main.COLOUR_PICKER_BUTTON.open) return;
+
+        g.setColor(new Color(22,22,22));
+        g.fillRect(0, 0, width.getAsInt(), height.getAsInt());
+    }
+
+    @Override
+    public boolean handleClick(MouseEvent e) {
+        return true;
+    }
+
+    @Override
+    public boolean handleDrag(MouseEvent e) {
+        return Main.COLOUR_PICKER_BUTTON.open;
+    }
+
+    @Override
+    public boolean handleHover(MouseEvent e) {
+        if (!Main.COLOUR_PICKER_BUTTON.open) return false;
+
+        Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        return true;
+    }
+}
+```
+It also contains constants used throughout the other colour picker elements:
+```java
+private static final int BOX_DIAMETER = 220;
+private static final int BAR_SIZE = 15;
+private static final int BAR_SPACING = 5;
+private static final int SATURATION_BRIGHTNESS_BOX_SIZE = BOX_DIAMETER-BAR_SIZE-BAR_SPACING*3;
+
+private static final float[] HSL = Color.RGBtoHSB(getCurrentColour().getRGB(), getCurrentColour().getGreen(), getCurrentColour().getBlue(), new float[4]);
+private static float OPACITY = getCurrentColour().getAlpha() / 255f;
+
+private static Color getCurrentColour() {
+    return Cursor.CURSOR_COLOR;
+}
+
+private static final int BACKGROUND_Y = Main.TOOLBAR.getIconY() + Toolbar.ICON_SIZE;
+
+public static void setColour() {
+    // set the colour to our new edited HSB colours
+    Color newHsbColour = Color.getHSBColor(HSL[0], 1-HSL[1], 1-HSL[2]);
+    // set opacity
+    Cursor.CURSOR_COLOR = new Color(newHsbColour.getRed(), newHsbColour.getGreen(), newHsbColour.getBlue(), (int) (OPACITY*255));
+}
+```
+The hard part is drawing gradient bars to represent the individual parts of the colour picker.
+To draw a gradient, I loop through each pixel in the gradient, set the colour to its appropriate colour, and draw the pixel.
+The box which shows all the saturation and brightness values was the most complex as it had to fade two ways.
+Here is my implementation:
+```java
+public void draw(Graphics2D g) {
+    // ...
+    // loops a full square
+    for (int x = 0; x < SATURATION_BRIGHTNESS_BOX_SIZE; x++) {
+        for (int y = 0; y < SATURATION_BRIGHTNESS_BOX_SIZE; y++) {
+            // gets a ratio of x/width, this value is the ratio of the current progress through the gradient
+            float saturation = (float) x / SATURATION_BRIGHTNESS_BOX_SIZE;
+            float brightness = (float) y / SATURATION_BRIGHTNESS_BOX_SIZE;
+            
+            g.setColor(Color.getHSBColor(HSL[0], 1-saturation, 1-brightness));
+            // draw the pixel
+            g.fillRect(x, y, 1, 1);
+        }
+    }
+    // ...
+}
+```
+Then, to get the colour the mouse of hovering over, we reverse the gradient math:
+```java
+public boolean handleDrag(MouseEvent e) {
+    // ...
+    HSB[1] = Math.clamp((float) mouseX / SATURATION_BRIGHTNESS_BOX_SIZE, 0, 1);
+    HSB[2] = Math.clamp((float) mouseY / SATURATION_BRIGHTNESS_BOX_SIZE, 0, 1);
+    // ...
+}
+
+```
+The HueSlider and OpacitySlider Elements follow the same concept.
+Together these elements make the colour picker:
+
+![colourPicker.png](repo/colourPicker.png)
 
 # Evaluation
 ## Testing to Inform Evaluation

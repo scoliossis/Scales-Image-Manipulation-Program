@@ -11,6 +11,7 @@ public class MouseListener extends MouseAdapter {
     @Override
     public void mouseReleased(MouseEvent e) {
         MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = null;
+        Main.currentCursor.handleRelease(e);
     }
 
     @Override

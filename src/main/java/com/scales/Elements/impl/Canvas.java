@@ -1,6 +1,7 @@
-package com.scales.Elements;
+package com.scales.Elements.impl;
 
-import com.scales.Listeners.MouseMotionListener;
+import com.scales.Elements.Element;
+import com.scales.Main;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -12,9 +13,17 @@ public class Canvas extends Element {
     public static BufferedImage CANVAS_IMAGE = new BufferedImage(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT, BufferedImage.TYPE_INT_ARGB);
     public static Graphics2D IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
 
+    public static int
+            canvasOffsetX = Main.DEFAULT_FRAME_SIZE.width / 2 - DEFAULT_CANVAS_WIDTH / 2,
+            canvasOffsetY = Main.DEFAULT_FRAME_SIZE.height / 2 - DEFAULT_CANVAS_HEIGHT / 2;
+
     public Canvas() {
-        // priority 0 means it is drawn first
-        super(0, 0, DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT);
+        super(
+                () -> canvasOffsetX,
+                () -> canvasOffsetY,
+                () -> CANVAS_IMAGE.getWidth(),
+                () -> CANVAS_IMAGE.getHeight()
+        );
     }
 
     @Override
@@ -26,31 +35,23 @@ public class Canvas extends Element {
 
     @Override
     public boolean handleClick(MouseEvent e) {
-        int x = this.applyTransform(e.getX(), this.x);
-        int y = this.applyTransform(e.getY(), this.y);
-        if (x >= 0 && x < CANVAS_IMAGE.getWidth() && y >= 0 && y < CANVAS_IMAGE.getHeight()) {
-            Canvas.CANVAS_IMAGE.setRGB(x, y, Color.RED.getRGB());
-        }
+        Main.currentCursor.handleClick(e);
 
         return true;
     }
 
     @Override
     public boolean handleDrag(MouseEvent e) {
-        Canvas.IMAGE_GRAPHICS.setColor(Color.RED);
-        Canvas.IMAGE_GRAPHICS.drawLine(
-                this.applyTransform(MouseMotionListener.lastMouseDragX, this.x),
-                this.applyTransform(MouseMotionListener.lastMouseDragY, this.y),
-                this.applyTransform(e.getX(), this.x),
-                this.applyTransform(e.getY(), this.y)
-        );
+        Main.currentCursor.handleDrag(e);
 
         return true;
     }
 
     @Override
     public boolean handleHover(MouseEvent e) {
-        return false;
+        Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+
+        return true;
     }
 
     public void resizeCanvas(int width, int height) {
@@ -58,13 +59,12 @@ public class Canvas extends Element {
         BufferedImage oldImage = CANVAS_IMAGE;
         IMAGE_GRAPHICS.dispose();
 
-        int newWidth = Math.max(this.applyTransform(width, this.x), 1);
-        int newHeight = Math.max(this.applyTransform(height, this.y), 1);
-
-        CANVAS_IMAGE = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+        CANVAS_IMAGE = new BufferedImage(
+                Math.max(this.applyTransform(width, this.x.getAsInt()), 1),
+                Math.max(this.applyTransform(height, this.y.getAsInt()), 1),
+                BufferedImage.TYPE_INT_ARGB
+        );
         IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
         IMAGE_GRAPHICS.drawImage(oldImage, 0, 0, null);
-        this.width = newWidth;
-        this.height = newHeight;
     }
 }

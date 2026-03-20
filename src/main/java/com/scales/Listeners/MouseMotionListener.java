@@ -28,20 +28,13 @@ public class MouseMotionListener extends MouseAdapter {
         handleMouseMoveEvent(e);
     }
 
-    private void handleMouseDragEvent(MouseEvent e) {
-        for (Element element : Main.ELEMENTS.reversed()) {
-            // breaks out of the loop if the element currently hovered wants to stop other elements from handling the drag event
-            if (MouseUtil.isMouseHovering(e, element) && element.handleDrag(e)) break;
-        }
-    }
-
     private void handleMouseMoveEvent(MouseEvent e) {
-        // reset the cursor to the default cursor, the element can then handle if it wants to change the cursor to something else
-        Main.FRAME.setCursor(Cursor.getDefaultCursor());
-
         for (Element element : Main.ELEMENTS.reversed()) {
-            // breaks out of the loop if the element currently hovered wants to stop other elements from handling the hover event
-            if (MouseUtil.isMouseHovering(e, element) && element.handleHover(e)) break;
+            // returns if we are hovering an element to stop the cursor being reset
+            if (MouseUtil.isMouseHovering(e, element) && element.handleHover(e)) return;
         }
+
+        // reset the cursor to the default cursor because no element is hovered
+        Main.FRAME.setCursor(Cursor.getDefaultCursor());
     }
 }

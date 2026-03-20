@@ -1,18 +1,16 @@
 package com.scales.Elements;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.function.IntSupplier;
 
+@RequiredArgsConstructor
 public abstract class Element {
-    public int x, y, width, height;
+    @NonNull public IntSupplier x, y, width, height;
     public double scale = 1;
-
-    public Element(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-    }
 
     public abstract void draw(Graphics2D g);
 

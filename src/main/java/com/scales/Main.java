@@ -1,8 +1,13 @@
 package com.scales;
 
-import com.scales.Elements.Canvas;
+import com.scales.Cursors.Cursor;
+import com.scales.Cursors.impl.PaintBrush;
+import com.scales.Cursors.impl.Pencil;
 import com.scales.Elements.Element;
-import com.scales.Elements.ResizeCanvasButton;
+import com.scales.Elements.impl.Canvas;
+import com.scales.Elements.impl.ColourPicker.*;
+import com.scales.Elements.impl.ResizeCanvasButton;
+import com.scales.Elements.impl.Toolbar;
 import com.scales.Listeners.KeyListener;
 import com.scales.Listeners.MouseListener;
 import com.scales.Listeners.MouseMotionListener;
@@ -16,14 +21,38 @@ import java.awt.image.BufferStrategy;
 import java.util.List;
 
 public class Main {
+    public static final Rectangle DEFAULT_FRAME_SIZE = new Rectangle(950, 540);
+
     public static final JFrame FRAME = new JFrame();
     public static Graphics2D FRAME_GRAPHICS;
 
     public static final Canvas CANVAS = new Canvas();
+    public static final ResizeCanvasButton RESIZE_CANVAS_BUTTON = new ResizeCanvasButton();
+    public static final Toolbar TOOLBAR = new Toolbar();
+    public static final ColourPickerButton COLOUR_PICKER_BUTTON = new ColourPickerButton();
+    public static final ColourPickerBackground COLOUR_PICKER_BACKGROUND = new ColourPickerBackground();
+    public static final SaturationBrightnessBox COLOUR_PICKER_SATURATION_BRIGHTNESS = new SaturationBrightnessBox();
+    public static final HueSlider COLOUR_PICKER_HUE_SLIDER = new HueSlider();
+    public static final OpacitySlider COLOUR_PICKER_OPACITY_SLIDER = new OpacitySlider();
 
     public static final List<Element> ELEMENTS = List.of(
             CANVAS,
-            new ResizeCanvasButton()
+            RESIZE_CANVAS_BUTTON,
+            TOOLBAR,
+            COLOUR_PICKER_BUTTON,
+            COLOUR_PICKER_BACKGROUND,
+            COLOUR_PICKER_SATURATION_BRIGHTNESS,
+            COLOUR_PICKER_HUE_SLIDER,
+            COLOUR_PICKER_OPACITY_SLIDER
+    );
+
+    public static final Pencil PENCIL = new Pencil();
+    public static final PaintBrush PAINT_BRUSH = new PaintBrush();
+    public static Cursor currentCursor = PAINT_BRUSH;
+
+    public static final List<Cursor> CURSORS = List.of(
+            PENCIL,
+            PAINT_BRUSH
     );
 
     public static void main(String[] args) {
@@ -33,7 +62,7 @@ public class Main {
 
     private static void initialiseGUI() {
         // frame size
-        FRAME.setSize(950, 540);
+        FRAME.setSize(DEFAULT_FRAME_SIZE.width, DEFAULT_FRAME_SIZE.height);
         // centres frame on screen
         FRAME.setLocationRelativeTo(null);
         // closes the program when the window is closed
@@ -75,7 +104,7 @@ public class Main {
             // draw each element
             ELEMENTS.forEach(e -> {
                 AffineTransform currentTransform = FRAME_GRAPHICS.getTransform();
-                FRAME_GRAPHICS.translate(e.x, e.y);
+                FRAME_GRAPHICS.translate(e.x.getAsInt(), e.y.getAsInt());
                 FRAME_GRAPHICS.scale(e.scale, e.scale);
 
                 e.draw(FRAME_GRAPHICS);
