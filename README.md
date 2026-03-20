@@ -270,30 +270,35 @@ With just these small steps, it is already possible to create a UI, handle an in
 
 ## Key Variables
 <!--Identify key variables / data structures / classes justifying choices and any necessary validation.-->
-| Variable        | Type                            | Description                                                        |
-|:----------------|:--------------------------------|:-------------------------------------------------------------------|
-| `FRAME`         | `JFrame`                        | The frame which is drawn to                                        |
-| `MouseListener` | `class extending MouseListener` | Class listening for and responding to mouse inputs                 |
-| `KeyListener`   | `class extending KeyListener`   | Class listening for and responding to key inputs                   |
-| `g`             | `Graphics2D`                    | The graphics context of the canvas, allows us to draw to the image |
-| `CANVAS_IMAGE`  | `BufferedImage`                 | The image being manipulated.                                       |
-| `CANVAS_X`      | `int`                           | The x position of the canvas.                                      |
-| `CANVAS_Y`      | `int`                           | The y position of the canvas.                                      |
-| `CANVAS_SCALE`  | `double`                        | The scale of the canvas.                                           |
+| Variable         | Type                            | Description                                                        |
+|:-----------------|:--------------------------------|:-------------------------------------------------------------------|
+| `FRAME`          | `JFrame`                        | The frame which is drawn to                                        |
+| `MouseListener`  | `class extending MouseListener` | Class listening for and responding to mouse inputs                 |
+| `KeyListener`    | `class extending KeyListener`   | Class listening for and responding to key inputs                   |
+| `FRAME_GRAPHICS` | `Graphics2D`                    | The graphics context of the canvas, allows us to draw to the image |
+| `CANVAS_IMAGE`   | `BufferedImage`                 | The image being manipulated.                                       |
+| `CANVAS_X`       | `int`                           | The x position of the canvas.                                      |
+| `CANVAS_Y`       | `int`                           | The y position of the canvas.                                      |
+| `CANVAS_SCALE`   | `double`                        | The scale of the canvas.                                           |
+| `ELEMENT`        | `Element`                       | Abstract parent class for interactable elements                    |
+| `ELEMENTS`       | `List of Element's`             | List of elements, used for handling them                           |
+| `CURSOR`         | `Cursor`                        | Abstract parent class for usable cursor types                      |
+| `CURSORS`        | `List of Cursor's`              | List of cursors, used for handling them                            |
+| `CHANGES_BUFFER` | `Buffer of BufferedImages`      | Stores previous changes to the file for CTRL+Z to work             |
 
 ## Testing
 <!--Identify the test data to be used during the iterative development and post-development phases and justify the choice of this test data.-->
-| Test Data                     | Reason                                                                          |
-|:------------------------------|:--------------------------------------------------------------------------------|
-| Large Image                   | Test RAM usage and performance of the program                                   |
-| Small Image                   | Test the program's ability to handle scaling small images to be drawable on     |
-| CTRL+Z with no undo history   | Tests if the program handles the history being a null pointer                   |
-| Clicking outside image bounds | Tests if the program correctly handles the mouse being outside the image bounds |
-| CTRL+V with invalid clipboard | Tests if the program handles the clipboard being a null pointer                 |
+| Test Data                          | Reason                                                                          |
+|:-----------------------------------|:--------------------------------------------------------------------------------|
+| Large Image                        | Test RAM usage and performance of the program                                   |
+| Small Image                        | Test the program's ability to handle scaling small images to be drawable on     |
+| CTRL+Z with no undo history        | Tests if the program handles the history being a null pointer                   |
+| Clicking outside image bounds      | Tests if the program correctly handles the mouse being outside the image bounds |
+| CTRL+V with invalid clipboard      | Tests if the program handles the clipboard being a null pointer                 |
+| Resizing image to be negative size | Tests if the program handles the image being resized to a negative size         |
 
 # Development
 ## Prototype 1
-
 ### GUI
 The first stage of development is creating a GUI which I can draw to.
 In Main.java I created a global constant which of the GUI 
@@ -579,7 +584,6 @@ private static void drawLoop() {
 
         FRAME_GRAPHICS.setTransform(currentTransform);
     });
-    
     // ...
 }
 ```
@@ -1334,6 +1338,74 @@ The HueSlider and OpacitySlider Elements follow the same concept.
 Together these elements make the colour picker:
 
 ![colourPicker.png](repo/colourPicker.png)
+
+This concludes prototype 3.
+In this prototype a base for changing the action the cursor performs was created.
+This allows for easy expansion of the program to include other more complex cursor options.
+The colour picker was a necessary feature which I am glad to have implemented early.
+
+## Prototype 4
+### Undo/Redoing
+I decided to implement undo/redoing as a feature of the program.
+To handle this, we need to create a stack of all the actions the user has performed.
+I store this stack in its own class, HandleUndoTimeline.
+For this project I decided to store these stacks as this:
+```java
+public static final ArrayList<BufferedImage> CHANGES_BUFFER = new ArrayList<>();
+public static final ArrayList<BufferedImage> REDO_BUFFER = new ArrayList<>();
+```
+The CHANGES_BUFFER is updated before a mouse click is executed in Canvas.java:
+```java
+public boolean handleClick(MouseEvent e) {
+    HandleUndoTimeline.bufferCanvas();
+    // ...
+}
+```
+This calls the new bufferCanvas function. This function creates a copy of the image and appends it to the CHANGES_BUFFER.
+It also resets the REDO_BUFFER as the new drawing is now the latest.
+We only want to buffer up to 10 images to save RAM, so we remove the earliest item from the stack if it is full.
+Here is the bufferCanvas code which is called when drawing:
+```java
+public static void bufferCanvas() {
+    REDO_BUFFER.clear();
+    
+    BufferedImage imageClone = new BufferedImage(Canvas.CANVAS_IMAGE.getWidth(), Canvas.CANVAS_IMAGE.getHeight(), Canvas.CANVAS_IMAGE.getType());
+    imageClone.getGraphics().drawImage(Canvas.CANVAS_IMAGE, 0, 0, null);
+    CHANGES_BUFFER.add(imageClone);
+    imageClone.getGraphics().dispose();
+    
+    if (CHANGES_BUFFER.size() > 10) CHANGES_BUFFER.removeFirst();
+}
+```
+In the KeyListener class, we need to handle key presses for CTRL+Z and CTRL+Y:
+```java
+public void keyPressed(KeyEvent e) {
+    // ...
+    if (isKeyDown(KeyEvent.VK_CONTROL)) {
+        HandleUndoTimeline.handleCtrlKey(e);
+    }
+}
+```
+Which is handled in HandleUndoTimeline:
+```java
+public static void handleCtrlKey(KeyEvent e) {
+    if (e.getKeyCode() == KeyEvent.VK_Z && !CHANGES_BUFFER.isEmpty()) {
+        REDO_BUFFER.add(Canvas.CANVAS_IMAGE);
+        loadCanvas(CHANGES_BUFFER.removeLast());
+    }
+    else if (e.getKeyCode() == KeyEvent.VK_Y && !REDO_BUFFER.isEmpty()) {
+        CHANGES_BUFFER.add(Canvas.CANVAS_IMAGE);
+        loadCanvas(REDO_BUFFER.removeLast());
+    }
+}
+```
+The loadCanvas function sets the image and graphics to the BufferedImage item popped from the stack:
+```java
+public static void loadCanvas(BufferedImage image) {
+    Canvas.CANVAS_IMAGE = image;
+    Canvas.IMAGE_GRAPHICS = (Graphics2D) Canvas.CANVAS_IMAGE.getGraphics();
+}
+```
 
 # Evaluation
 ## Testing to Inform Evaluation

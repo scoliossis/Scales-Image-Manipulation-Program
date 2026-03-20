@@ -2,6 +2,7 @@ package com.scales.Elements.impl;
 
 import com.scales.Elements.Element;
 import com.scales.Main;
+import com.scales.Utils.HandleUndoTimeline;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -35,6 +36,7 @@ public class Canvas extends Element {
 
     @Override
     public boolean handleClick(MouseEvent e) {
+        HandleUndoTimeline.bufferCanvas();
         Main.currentCursor.handleClick(e);
 
         return true;

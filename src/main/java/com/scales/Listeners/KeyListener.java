@@ -1,5 +1,7 @@
 package com.scales.Listeners;
 
+import com.scales.Utils.HandleUndoTimeline;
+
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
@@ -13,6 +15,10 @@ public class KeyListener extends KeyAdapter {
     @Override
     public void keyPressed(KeyEvent e) {
         KEYS_PRESSED.put(e.getKeyCode(), true);
+
+        if (isKeyDown(KeyEvent.VK_CONTROL)) {
+            HandleUndoTimeline.handleCtrlKey(e);
+        }
     }
     @Override
     public void keyReleased(KeyEvent e) {
