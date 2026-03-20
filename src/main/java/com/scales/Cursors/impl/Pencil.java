@@ -3,6 +3,7 @@ package com.scales.Cursors.impl;
 import com.scales.Cursors.Cursor;
 import com.scales.Elements.impl.Canvas;
 import com.scales.Listeners.MouseMotionListener;
+import com.scales.Utils.MouseUtil;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -23,7 +24,7 @@ public class Pencil extends Cursor {
     }
 
     public void drawDot(MouseEvent e, int width) {
-        int[] mouseCoords = fixMouseCoords(e.getX(), e.getY());
+        int[] mouseCoords = fixMouseCoords(MouseUtil.getX(e), MouseUtil.getY(e));
         Canvas.IMAGE_GRAPHICS.fillRect(mouseCoords[0] - width / 2, mouseCoords[1] - width / 2, width, width);
     }
 
@@ -36,7 +37,7 @@ public class Pencil extends Cursor {
     public void drawLine(MouseEvent e, int width) {
         // fix coordinates to be local to the canvas.
         int[] lastMouse = fixMouseCoords(MouseMotionListener.lastMouseDragX, MouseMotionListener.lastMouseDragY);
-        int[] newMouse = fixMouseCoords(e.getX(), e.getY());
+        int[] newMouse = fixMouseCoords(MouseUtil.getX(e), MouseUtil.getY(e));
 
         int xChange = newMouse[0] - lastMouse[0];
         int yChange = newMouse[1] - lastMouse[1];

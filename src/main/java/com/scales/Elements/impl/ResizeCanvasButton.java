@@ -2,6 +2,7 @@ package com.scales.Elements.impl;
 
 import com.scales.Elements.Element;
 import com.scales.Main;
+import com.scales.Utils.MouseUtil;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -29,9 +30,10 @@ public class ResizeCanvasButton extends Element {
         return true;
     }
 
+    // todo: dont actually resize until release
     @Override
     public boolean handleDrag(MouseEvent e) {
-        Main.CANVAS.resizeCanvas(e.getX(), e.getY());
+        Main.CANVAS.resizeCanvas(MouseUtil.getX(e), MouseUtil.getY(e));
         return true;
     }
 

@@ -1420,6 +1420,7 @@ public static void loadCanvas(BufferedImage image) {
     Canvas.IMAGE_GRAPHICS = (Graphics2D) Canvas.CANVAS_IMAGE.getGraphics();
 }
 ```
+
 ### Rubber
 Implementing a rubber seems easy at first.
 The pencil class already handles drawing lines, in theory we can just draw a line with no opacity and call it a rubber.
@@ -1464,6 +1465,44 @@ public void drawLine(MouseEvent e, int width) {
 }
 ```
 
+### Importing Images
+Importing images is straightforward.
+We give the Frame a drop target, which acts as a listener for when files are dropped onto it:
+```java
+private static void initialiseGUI() {
+    // ...
+    FRAME.setDropTarget(new FileDropListener());
+}
+```
+and this listener parses the file dropped onto it as an image:
+```java
+public class FileDropListener extends DropTarget { 
+    @Override
+    public void drop(DropTargetDropEvent dtde) {
+        try {
+            // accept drop and get the files dropped onto the frame
+            dtde.acceptDrop(DnDConstants.ACTION_COPY);
+            List<File> droppedFiles = (List<File>) dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+            
+            // read the image
+            BufferedImage bufferedImage = ImageIO.read(droppedFiles.getFirst());
+            // if the parsed file isnt an image, then just ignore it
+            if (bufferedImage != null) Main.CANVAS.setCanvasImage(bufferedImage);
+            
+            // success!
+            dtde.dropComplete(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+Which works for all common image formats, below is a copyright-free smiley face I imported:
+
+![smileyFaceCool.png](repo/smileyFaceCool.png)
+
+It should also be possible to import images via CTRL+V.
+
 # Evaluation
 ## Testing to Inform Evaluation
 ### Functional Testing
@@ -1488,9 +1527,9 @@ Below is an updated table on the success of my solution compared to the original
 |       Colour       | ✅   |
 |        Fill        | ❌   |
 |       Layers       | ❌   |
-|      Erasing       | ❌   |
+|      Erasing       | ✅   |
 |      Cropping      | ✅   |
-|        Text        | ✅   |
+|        Text        | ❌   |
 |      Scaling       | ❌   |
 |       Moving       | ❌   |
 |      Rotating      | ❌   |

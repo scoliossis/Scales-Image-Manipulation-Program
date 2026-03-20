@@ -2,6 +2,7 @@ package com.scales.Elements.impl.ColourPicker;
 
 import com.scales.Elements.Element;
 import com.scales.Main;
+import com.scales.Utils.MouseUtil;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -49,7 +50,7 @@ public class OpacitySlider extends Element {
     public boolean handleDrag(MouseEvent e) {
         if (!Main.COLOUR_PICKER_BUTTON.open) return false;
 
-        int mouseX = this.applyTransform(e.getX(), this.x.getAsInt());
+        int mouseX = this.applyTransform(MouseUtil.getX(e), this.x.getAsInt());
         OPACITY = Math.clamp((float) (mouseX - BAR_SPACING) / SATURATION_BRIGHTNESS_BOX_SIZE, 0, 1);
         ColourPickerBackground.setColour();
 

@@ -19,8 +19,8 @@ public class MouseMotionListener extends MouseAdapter {
             CURRENTLY_DRAGGING_ELEMENT.handleHover(e);
         }
 
-        lastMouseDragX = e.getX();
-        lastMouseDragY = e.getY();
+        lastMouseDragX = MouseUtil.getX(e);
+        lastMouseDragY = MouseUtil.getY(e);
     }
 
     @Override

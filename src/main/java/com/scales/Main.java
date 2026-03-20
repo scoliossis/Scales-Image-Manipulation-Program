@@ -8,10 +8,7 @@ import com.scales.Elements.impl.Canvas;
 import com.scales.Elements.impl.ColourPicker.*;
 import com.scales.Elements.impl.ResizeCanvasButton;
 import com.scales.Elements.impl.Toolbar;
-import com.scales.Listeners.KeyListener;
-import com.scales.Listeners.MouseListener;
-import com.scales.Listeners.MouseMotionListener;
-import com.scales.Listeners.MouseWheelListener;
+import com.scales.Listeners.*;
 import lombok.Setter;
 
 import javax.swing.*;
@@ -68,9 +65,6 @@ public class Main {
         // closes the program when the window is closed
         FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // todo: remove
-        FRAME.setUndecorated(true);
-
         // makes the frame visible
         FRAME.setVisible(true);
         // create a frame buffer, which will be drawn to as opposed to drawing directly to the screen
@@ -80,6 +74,8 @@ public class Main {
         FRAME.addMouseListener(new MouseListener());
         FRAME.addMouseWheelListener(new MouseWheelListener());
         FRAME.addKeyListener(new KeyListener());
+        FRAME.addComponentListener(new ComponentListener());
+        FRAME.setDropTarget(new FileDropListener());
     }
 
     // constant value for time between frames being rendered
@@ -94,10 +90,13 @@ public class Main {
 
         while (running) {
             // drawing the program with a frame cap makes the program run smoother than attempting to draw every frame
-            if (System.currentTimeMillis() - lastFrameMS < FRAME_TIME_GAP) continue;
+            if (System.currentTimeMillis() - lastFrameMS < FRAME_TIME_GAP && !bufferStrategy.contentsRestored()) continue;
 
             // create graphics
             FRAME_GRAPHICS = (Graphics2D) bufferStrategy.getDrawGraphics();
+            // offset down so we aren't drawing below the window bar
+            FRAME_GRAPHICS.translate(0, FRAME.getInsets().top);
+
             // reset screen
             FRAME_GRAPHICS.clearRect(0, 0, FRAME.getWidth(), FRAME.getHeight());
 

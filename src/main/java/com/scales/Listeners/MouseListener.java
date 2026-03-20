@@ -22,8 +22,8 @@ public class MouseListener extends MouseAdapter {
             if (MouseUtil.isMouseHovering(e, element)) {
                 boolean clicked = element.handleClick(e);
                 if (!setDraggingElement && (clicked || element.handleDrag(e))) {
-                    MouseMotionListener.lastMouseDragX = e.getX();
-                    MouseMotionListener.lastMouseDragY = e.getY();
+                    MouseMotionListener.lastMouseDragX = MouseUtil.getX(e);
+                    MouseMotionListener.lastMouseDragY = MouseUtil.getY(e);
                     MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = element;
                     setDraggingElement = true;
                 }

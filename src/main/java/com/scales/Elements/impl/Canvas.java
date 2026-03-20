@@ -15,8 +15,8 @@ public class Canvas extends Element {
     public static Graphics2D IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
 
     public static int
-            canvasOffsetX = Main.DEFAULT_FRAME_SIZE.width / 2 - DEFAULT_CANVAS_WIDTH / 2,
-            canvasOffsetY = Main.DEFAULT_FRAME_SIZE.height / 2 - DEFAULT_CANVAS_HEIGHT / 2;
+            canvasOffsetX = -DEFAULT_CANVAS_WIDTH / 2,
+            canvasOffsetY = -DEFAULT_CANVAS_HEIGHT / 2;
 
     public Canvas() {
         super(
@@ -31,6 +31,9 @@ public class Canvas extends Element {
     public void draw(Graphics2D g) {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, CANVAS_IMAGE.getWidth(), CANVAS_IMAGE.getHeight());
+
+        // todo: image fails to draw if the transformations are too large.
+        //  upon resize they are sometimes generating black pixels where resized.
         g.drawImage(CANVAS_IMAGE, 0, 0, null);
     }
 
@@ -64,9 +67,22 @@ public class Canvas extends Element {
         CANVAS_IMAGE = new BufferedImage(
                 Math.max(this.applyTransform(width, this.x.getAsInt()), 1),
                 Math.max(this.applyTransform(height, this.y.getAsInt()), 1),
-                BufferedImage.TYPE_INT_ARGB
+                CANVAS_IMAGE.getType()
         );
+
         IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
-        IMAGE_GRAPHICS.drawImage(oldImage, 0, 0, null);
+
+        IMAGE_GRAPHICS.drawImage(oldImage, 0, 0, oldImage.getWidth(), oldImage.getHeight(), null);
+    }
+
+    public void setCanvasImage(BufferedImage image) {
+        int oldWidth = CANVAS_IMAGE.getWidth(), oldHeight = CANVAS_IMAGE.getHeight();
+
+        IMAGE_GRAPHICS.dispose();
+        CANVAS_IMAGE = image;
+        IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
+
+        canvasOffsetX = (int) (canvasOffsetX + ((oldWidth - CANVAS_IMAGE.getWidth()) / 2d * this.scale));
+        canvasOffsetY = (int) (canvasOffsetY + ((oldHeight - CANVAS_IMAGE.getHeight()) / 2d * this.scale));
     }
 }
