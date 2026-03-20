@@ -6,7 +6,7 @@ https://www.bhasvic.ac.uk/media/pdf/computer-science-al-170844-specification-acc
 ## <u>Table of Contents</u>
 - [Analysis of the Problem](#Analysis-of-the-Problem)
     - [Problem Identification](#Problem-Identification)
-      - etc (fill this at the end, im sure intellij doesn't have a thing to auto fill it)
+        - etc (fill this at the end, im sure intellij doesn't have a thing to auto fill it)
 
 
 # Analysis of the Problem
@@ -89,45 +89,59 @@ It comes with a large standard library, which allows for a wide range of feature
 This includes JavaFX, which is a framework which allows the user to create a GUI in a simple and intuitive way.
 
 ### Problem Limitations
-The program is made with many different stakeholders' ideals at heart. 
+The program is made with many different stakeholders' ideals at heart.
 They can each have conflicting desires, which makes it difficult to satisfy everyone.
-Some users require a much wider range of specified features, which either are not essential or could take too much time. 
-Since the program is being developed alone, time is a large limitation. 
-Abstraction must be used to cull unnecessary features, and complex effects may be outside the timescale or outside my skill set. 
+Some users require a much wider range of specified features, which either are not essential or could take too much time.
+Since the program is being developed alone, time is a large limitation.
+Abstraction must be used to cull unnecessary features, and complex effects may be outside the timescale or outside my skill set.
 Image manipulation is a new field of research for me, which means that I will need to learn the basics for this project, which is another factor which takes time away.
 
 ### Success Criteria
-|   Criteria    | Description                                                             |
-|:-------------:|-------------------------------------------------------------------------|
-| User Friendly | The user should be able to use the program without any difficulty.      |
-| Customisable  | The user should be able to configure the program to fit their use case. |
-|   Efficient   | The program should be able to perform well without powerful hardware    |
-|   Reliable    | The program should be able to perform well under extreme conditions.    |
+|      Criteria      | Description                                     |
+|:------------------:|-------------------------------------------------|
+|      Drawing       | Using the mouse to draw on an image             |
+|    Cursor Size     | Change the area the cursor effects              |
+|       Colour       | Change the colour the cursor draws              |
+|        Fill        | Fill in sections of the image in a single click |
+|       Layers       | To edit different layers of an image            |
+|      Erasing       | Erasing parts of an image                       |
+|      Cropping      | Change the size of the image without scaling    |
+|        Text        | Allows for text to be added to an image         |
+|      Scaling       | Change the image to be smaller                  |
+|       Moving       | Moving parts of an image easily                 |
+|      Rotating      | Should be able to rotate the image              |
+|     Importing      | Able to import images into the program          |
+|     Exporting      | Able to export images from the program          |
+| Usability Features | Keybinds like undo and redo                     |
 
 # Design of the Solution
 ## Decomposition
 <!--Break down the problem into smaller parts suitable for computational solutions justifying any decisions made.-->
 The program will be structured into subproblems which will be solved in turn.
 - GUI
-  - Initialising
-  - Toolbar
-  - Canvas
-  - Transforming the canvas
-    - Zooming in/out
-    - Moving the canvas
+    - Initialising
+    - Toolbar
+        - Pencil
+        - Fill
+        - Select
+        - Colour picker
+    - Canvas
+    - Transforming the canvas
+        - Zooming in/out
+        - Moving the canvas
 - Handling Inputs
-  - Clicking on elements of the GUI
-    - Appropriately changing the cursor's position relative to transformations of canvas
-  - Keyboard input
-    - CTRL+Z / CTRL+Y
-    - CTRL+C / CTRL+V
-    - CTRL+A
-    - CTRL+S
+    - Clicking on elements of the GUI
+        - Appropriately changing the cursor's position relative to transformations of canvas
+    - Keyboard input
+        - CTRL+Z / CTRL+Y
+        - CTRL+C / CTRL+V / CTRL+X
+        - CTRL+A
+        - CTRL+S
 - Manipulating Images
-  - Scaling
-    - Cropping
-    - Rotating
-    - Drawing
+    - Scaling
+        - Cropping
+        - Rotating
+        - Drawing
 - Saving Images
 
 ## Solution Description
@@ -156,7 +170,7 @@ For example, Java comes packaged with a data type which can store an image, whic
 Creating the window is simply handled by the JavaFX framework.
 An object with the JFrame class is created, and within the main function its "setVisible" method is called to display a blank GUI.
 A size needs to be set, as it defaults to 0x0.
-The window is centered on the screen by settings its position relative to null, it defaults to the top left of the screen.
+The window is centered on the screen by setting its position relative to null, it defaults to the top left of the screen.
 The close operation needs to be set, which tells the program to end when the GUI is closed.
 ```java 
 private static final JFrame FRAME = new JFrame("window title");
@@ -301,7 +315,7 @@ With just these small steps, it is already possible to create a UI, handle an in
 ## Prototype 1
 ### GUI
 The first stage of development is creating a GUI which I can draw to.
-In Main.java I created a global constant which of the GUI 
+In Main.java I created a global constant which of the GUI
 ```java
 private static final JFrame FRAME = new JFrame();
 ```
@@ -1406,22 +1420,94 @@ public static void loadCanvas(BufferedImage image) {
     Canvas.IMAGE_GRAPHICS = (Graphics2D) Canvas.CANVAS_IMAGE.getGraphics();
 }
 ```
+### Rubber
+Implementing a rubber seems easy at first.
+The pencil class already handles drawing lines, in theory we can just draw a line with no opacity and call it a rubber.
+However, by default the graphics library interpolates between the colour drawn atop and beneath by their alpha.
+This means that a max opacity line takes full priority, whereas a no opacity line is not drawn at all.
+The graphics library does supply a way to change this behaviour.
+The graphics library has a "setComposite" method which allows us to change the alpha blending mode.
+We can change the code to overwrite the colour below it with the new colour, then reset the composite.
+Here is how we implement this:
+```java
+public void handleDrag(MouseEvent e) {
+    Composite composite = Canvas.IMAGE_GRAPHICS.getComposite();
+    Canvas.IMAGE_GRAPHICS.setComposite(AlphaComposite.Clear);
+    Canvas.IMAGE_GRAPHICS.setColor(new Color(0, 0, 0, 0));
+    Main.PENCIL.drawLine(e, 5);
+    Canvas.IMAGE_GRAPHICS.setComposite(composite);
+}
+```
+While I was experimenting with the new graphics functions, I discovered I came across a function which changes the stroke width.
+I decided to make a general drawLine function which takes mouse coordinates and stroke width as parameters:
+```java
+public void drawLine(MouseEvent e, int width) {
+    // fix coordinates to be local to the canvas.
+    int x1 = PARENT.applyTransform(MouseMotionListener.lastMouseDragX, PARENT.x.getAsInt());
+    int y1 = PARENT.applyTransform(MouseMotionListener.lastMouseDragY, PARENT.y.getAsInt());
+    int x2 = PARENT.applyTransform(e.getX(), PARENT.x.getAsInt());
+    int y2 = PARENT.applyTransform(e.getY(), PARENT.y.getAsInt());
+    
+    int xChange = x2 - x1;
+    int yChange = y2 - y1;
+    // no point rendering a 0-width line
+    if (xChange == 0 && yChange == 0) return;
+    
+    // store previous stroke to be restored
+    Stroke stroke = Canvas.IMAGE_GRAPHICS.getStroke();
+    // set stroke width to the parameter passed
+    Canvas.IMAGE_GRAPHICS.setStroke(new BasicStroke(width));
+    // draw the line, offset from the previous position as we don't want the lines to overlap, as that messes with transparency
+    Canvas.IMAGE_GRAPHICS.drawLine(x1 + Math.clamp(xChange, -1, 1), y1 + Math.clamp(yChange, -1, 1), x2, y2);
+    // restore stroke
+    Canvas.IMAGE_GRAPHICS.setStroke(stroke);
+}
+```
 
 # Evaluation
 ## Testing to Inform Evaluation
 ### Functional Testing
-[the word "robust" is really cool]
+<!--Provide annotated evidence of testing the solution of robustness at the end of the development process.-->
+Throughout the development phase I found and fixed bugs, so that the final product was robust.
+Through my testing, all classes function as intended with no logic or syntax errors.
+<!--Provide annotated evidence of usability testing (user feedback).-->
 
-### Usability Testing
-[user feedback]
 
 ## Success of the Solution
-[wowow reference back to](#success-criteria)
+The 
+[success criteria](#success-criteria) 
+from the 
+[design section](#design-of-the-solution)
+were each worked towards.
+Below is an updated table on the success of my solution compared to the original requirements:
+
+|      Criteria      | Met |
+|:------------------:|-----|
+|      Drawing       | ✅   |
+|    Cursor Size     | ❌   |
+|       Colour       | ✅   |
+|        Fill        | ❌   |
+|       Layers       | ❌   |
+|      Erasing       | ❌   |
+|      Cropping      | ✅   |
+|        Text        | ✅   |
+|      Scaling       | ❌   |
+|       Moving       | ❌   |
+|      Rotating      | ❌   |
+|     Importing      | ❌   |
+|     Exporting      | ❌   |
+| Usability Features | ✅   |
 
 ## Description of the Final Product
-[annotated picture, show the effectiveness of usability features]
+[annotated picture]
 
 ## Maintenance and Development
-### Maintainability
-
-### Potential Extensions
+Throughout the development process I used object-oriented programming.
+Object-oriented programming is great for the maintainability of a project as subclasses can each be modified by changing the parent class.
+The Element class allows for the easy addition of extra buttons for potential new features.
+The Cursor class allows for the easy addition of extra cursor types.
+Within functions, I put constant local variables at the top of files, which allows me to easily modify the look and function of the class.
+Since the program is relatively simple and small in scale, there is little to maintain.
+Optimisation could be improved; for example, the undo and redo keys store the state of the entire image in RAM at each point.
+This can be optimised by only storing the changes applied.
+More cursors could be implemented, such as a blur tool.

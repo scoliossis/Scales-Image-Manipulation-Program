@@ -20,13 +20,14 @@ public class MouseListener extends MouseAdapter {
         for (Element element : Main.ELEMENTS.reversed()) {
             // breaks out of the loop if the element currently hovered wants to stop other elements from handling the click event
             if (MouseUtil.isMouseHovering(e, element)) {
-                if (!setDraggingElement) {
+                boolean clicked = element.handleClick(e);
+                if (!setDraggingElement && (clicked || element.handleDrag(e))) {
                     MouseMotionListener.lastMouseDragX = e.getX();
                     MouseMotionListener.lastMouseDragY = e.getY();
                     MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = element;
                     setDraggingElement = true;
                 }
-                if (element.handleClick(e)) break;
+                if (clicked) break;
             }
         }
     }

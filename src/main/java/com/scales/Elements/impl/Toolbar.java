@@ -39,7 +39,7 @@ public class Toolbar extends Element {
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(new Color(199, 199, 199));
+        g.setColor(new Color(199, 199, 199, 190));
         g.fillRect(0, 0, width.getAsInt(), height.getAsInt());
 
         for (int i = 0; i < Main.CURSORS.size(); i++) {

@@ -48,6 +48,8 @@ public class HueSlider extends Element {
 
     @Override
     public boolean handleDrag(MouseEvent e) {
+        if (!Main.COLOUR_PICKER_BUTTON.open) return false;
+
         int mouseY = this.applyTransform(e.getY(), this.y.getAsInt());
         HSB[0] = Math.clamp((float) (mouseY - BAR_SPACING) / SATURATION_BRIGHTNESS_BOX_SIZE, 0, 1);
         ColourPickerBackground.setColour();
@@ -59,7 +61,7 @@ public class HueSlider extends Element {
     public boolean handleHover(MouseEvent e) {
         if (!Main.COLOUR_PICKER_BUTTON.open) return false;
 
-        Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
         return true;
     }
 }

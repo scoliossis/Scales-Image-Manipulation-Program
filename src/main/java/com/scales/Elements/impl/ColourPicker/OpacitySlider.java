@@ -47,6 +47,8 @@ public class OpacitySlider extends Element {
 
     @Override
     public boolean handleDrag(MouseEvent e) {
+        if (!Main.COLOUR_PICKER_BUTTON.open) return false;
+
         int mouseX = this.applyTransform(e.getX(), this.x.getAsInt());
         OPACITY = Math.clamp((float) (mouseX - BAR_SPACING) / SATURATION_BRIGHTNESS_BOX_SIZE, 0, 1);
         ColourPickerBackground.setColour();
@@ -58,7 +60,7 @@ public class OpacitySlider extends Element {
     public boolean handleHover(MouseEvent e) {
         if (!Main.COLOUR_PICKER_BUTTON.open) return false;
 
-        Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
         return true;
     }
 }

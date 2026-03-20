@@ -48,7 +48,7 @@ public class ColourPickerBackground extends Element {
 
     @Override
     public boolean handleClick(MouseEvent e) {
-        return true;
+        return Main.COLOUR_PICKER_BUTTON.open;
     }
 
     @Override

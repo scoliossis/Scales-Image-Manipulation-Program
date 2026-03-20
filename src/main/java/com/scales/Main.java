@@ -1,8 +1,8 @@
 package com.scales;
 
 import com.scales.Cursors.Cursor;
-import com.scales.Cursors.impl.PaintBrush;
 import com.scales.Cursors.impl.Pencil;
+import com.scales.Cursors.impl.Rubber;
 import com.scales.Elements.Element;
 import com.scales.Elements.impl.Canvas;
 import com.scales.Elements.impl.ColourPicker.*;
@@ -47,12 +47,12 @@ public class Main {
     );
 
     public static final Pencil PENCIL = new Pencil();
-    public static final PaintBrush PAINT_BRUSH = new PaintBrush();
-    public static Cursor currentCursor = PAINT_BRUSH;
+    public static final Rubber RUBBER = new Rubber();
+    public static Cursor currentCursor = PENCIL;
 
     public static final List<Cursor> CURSORS = List.of(
             PENCIL,
-            PAINT_BRUSH
+            RUBBER
     );
 
     public static void main(String[] args) {
