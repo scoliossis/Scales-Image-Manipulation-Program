@@ -10,7 +10,10 @@ import java.awt.event.MouseEvent;
 public class MouseListener extends MouseAdapter {
     @Override
     public void mouseReleased(MouseEvent e) {
-        MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = null;
+        if (MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT != null) {
+            MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT.handleRelease(e);
+            MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = null;
+        }
         Main.currentCursor.handleRelease(e);
     }
 

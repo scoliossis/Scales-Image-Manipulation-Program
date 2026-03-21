@@ -2,7 +2,6 @@ package com.scales.Elements.impl;
 
 import com.scales.Elements.Element;
 import com.scales.Main;
-import com.scales.Utils.HandleUndoTimeline;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -11,35 +10,56 @@ import java.awt.image.BufferedImage;
 public class Canvas extends Element {
     private static final int DEFAULT_CANVAS_WIDTH = 200, DEFAULT_CANVAS_HEIGHT = 200;
 
-    public static BufferedImage CANVAS_IMAGE = new BufferedImage(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT, BufferedImage.TYPE_INT_ARGB);
-    public static Graphics2D IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
+    public BufferedImage CANVAS_IMAGE = new BufferedImage(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+    public Graphics2D IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
 
     public static int
             canvasOffsetX = -DEFAULT_CANVAS_WIDTH / 2,
             canvasOffsetY = -DEFAULT_CANVAS_HEIGHT / 2;
 
+    public static int renderWidth = DEFAULT_CANVAS_WIDTH, renderHeight = DEFAULT_CANVAS_HEIGHT;
+
     public Canvas() {
         super(
                 () -> canvasOffsetX,
                 () -> canvasOffsetY,
-                () -> CANVAS_IMAGE.getWidth(),
-                () -> CANVAS_IMAGE.getHeight()
+                () -> renderWidth,
+                () -> renderHeight
         );
     }
 
     @Override
     public void draw(Graphics2D g) {
         g.setColor(Color.WHITE);
-        g.fillRect(0, 0, CANVAS_IMAGE.getWidth(), CANVAS_IMAGE.getHeight());
+        g.fillRect(0, 0, this.width.getAsInt(), this.height.getAsInt());
 
-        // todo: image fails to draw if the transformations are too large.
-        //  upon resize they are sometimes generating black pixels where resized.
-        g.drawImage(CANVAS_IMAGE, 0, 0, null);
+        g.clipRect(0, 0, this.width.getAsInt(), this.height.getAsInt());
+
+        // todo: fix upper bound
+        int leftCulled = Math.clamp(canvasOffsetX < 0 ? (int) (Math.abs(canvasOffsetX) / this.scale) : 0, 0, Integer.MAX_VALUE);
+        int topCulled = Math.clamp(canvasOffsetY < 0 ? (int) (Math.abs(canvasOffsetY) / this.scale) : 0, 0, Integer.MAX_VALUE);
+
+        for (Canvas canvas : Main.CANVAS_HIERARCHY) {
+            int rightCulled = Math.min(canvas.CANVAS_IMAGE.getWidth()-leftCulled-1, (int) Math.ceil(Main.FRAME.getWidth() / this.scale) + 1);
+            int bottomCulled = Math.min(canvas.CANVAS_IMAGE.getHeight()-topCulled-1, (int) Math.ceil(Main.FRAME.getHeight() / this.scale) + 1);
+
+            if (rightCulled <= 0 || bottomCulled <= 0) continue;
+
+            g.drawImage(
+                    // this works as an optimisation, but it also fixes in issue where large images become invisible when zoomed in too far
+                    canvas.CANVAS_IMAGE.getSubimage(leftCulled, topCulled, rightCulled, bottomCulled),
+                    leftCulled,
+                    topCulled,
+                    null
+            );
+        }
+
+        g.setClip(null);
     }
 
     @Override
     public boolean handleClick(MouseEvent e) {
-        HandleUndoTimeline.bufferCanvas();
+        //HandleUndoTimeline.bufferCanvas();
         Main.currentCursor.handleClick(e);
 
         return true;
@@ -59,30 +79,30 @@ public class Canvas extends Element {
         return true;
     }
 
-    public void resizeCanvas(int width, int height) {
-        // store the old image so it can be redrawn to the new resized image.
-        BufferedImage oldImage = CANVAS_IMAGE;
-        IMAGE_GRAPHICS.dispose();
+    public void resizeCanvas() {
+        for (Canvas canvas : Main.CANVAS_HIERARCHY) {
+            // store the old image so it can be redrawn to the new resized image.
+            BufferedImage oldImage = canvas.CANVAS_IMAGE;
+            canvas.IMAGE_GRAPHICS.dispose();
 
-        CANVAS_IMAGE = new BufferedImage(
-                Math.max(this.applyTransform(width, this.x.getAsInt()), 1),
-                Math.max(this.applyTransform(height, this.y.getAsInt()), 1),
-                CANVAS_IMAGE.getType()
-        );
+            canvas.CANVAS_IMAGE = new BufferedImage(
+                    Math.max(canvas.applyTransform(renderWidth, 0), 1),
+                    Math.max(canvas.applyTransform(renderHeight, 0), 1),
+                    oldImage.getType()
+            );
 
-        IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
+            canvas.IMAGE_GRAPHICS = (Graphics2D) canvas.CANVAS_IMAGE.getGraphics();
 
-        IMAGE_GRAPHICS.drawImage(oldImage, 0, 0, oldImage.getWidth(), oldImage.getHeight(), null);
+            canvas.IMAGE_GRAPHICS.drawImage(oldImage, 0, 0, oldImage.getWidth(), oldImage.getHeight(), null);
+        }
     }
 
     public void setCanvasImage(BufferedImage image) {
-        int oldWidth = CANVAS_IMAGE.getWidth(), oldHeight = CANVAS_IMAGE.getHeight();
+        this.IMAGE_GRAPHICS.dispose();
+        this.CANVAS_IMAGE = image;
+        this.IMAGE_GRAPHICS = (Graphics2D) image.getGraphics();
 
-        IMAGE_GRAPHICS.dispose();
-        CANVAS_IMAGE = image;
-        IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
-
-        canvasOffsetX = (int) (canvasOffsetX + ((oldWidth - CANVAS_IMAGE.getWidth()) / 2d * this.scale));
-        canvasOffsetY = (int) (canvasOffsetY + ((oldHeight - CANVAS_IMAGE.getHeight()) / 2d * this.scale));
+        renderWidth = image.getWidth();
+        renderHeight = image.getHeight();
     }
 }

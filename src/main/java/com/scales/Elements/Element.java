@@ -15,9 +15,12 @@ public abstract class Element {
     public abstract void draw(Graphics2D g);
 
     /// return true if it wishes to block the click from registering to others
+    public abstract boolean handleHover(MouseEvent e);
     public abstract boolean handleClick(MouseEvent e);
     public abstract boolean handleDrag(MouseEvent e);
-    public abstract boolean handleHover(MouseEvent e);
+    public void handleRelease(MouseEvent e) {
+        
+    }
 
     public int applyTransform(int n, int offset) {
         return (int) ((n / this.scale) - (offset / this.scale));

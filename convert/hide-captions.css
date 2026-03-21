@@ -1,0 +1,29 @@
+/* yeah i ChatGPT'ed a css file. what u gonna do about it? */
+
+/* Hide figure captions */
+figure figcaption {
+    display: none;
+}
+
+/* Images scale and avoid page breaks */
+img {
+    max-width: 100%;
+    height: auto;
+    page-break-inside: avoid;
+}
+
+/* Code blocks fix: prevent word loss and clipping */
+pre, code {
+    display: block;               /* ensures wrapping works consistently */
+    white-space: pre-wrap;        /* wrap long lines safely */
+    word-break: break-word;       /* force wrap inside long words if needed */
+    overflow-wrap: anywhere;      /* extra safety for wrapping */
+    overflow: visible;            /* do not clip content */
+    line-height: 1.3em;           /* slightly increased line spacing to prevent overlap */
+    padding: 0.5em;               /* optional: keeps text away from edges */
+}
+
+/* Optional: ensure inline syntax highlighting spans don't clip text */
+code span {
+    display: inline !important;
+}

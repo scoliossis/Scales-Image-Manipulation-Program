@@ -1,8 +1,8 @@
 package com.scales.Cursors.impl;
 
 import com.scales.Cursors.Cursor;
-import com.scales.Elements.impl.Canvas;
 import com.scales.Listeners.MouseMotionListener;
+import com.scales.Main;
 import com.scales.Utils.MouseUtil;
 
 import java.awt.*;
@@ -19,18 +19,18 @@ public class Pencil extends Cursor {
 
     @Override
     public void handleClick(MouseEvent e) {
-        Canvas.IMAGE_GRAPHICS.setColor(CURSOR_COLOR);
+        Main.CURRENT_CANVAS.IMAGE_GRAPHICS.setColor(CURSOR_COLOR);
         drawDot(e, DIAMETER);
     }
 
     public void drawDot(MouseEvent e, int width) {
         int[] mouseCoords = fixMouseCoords(MouseUtil.getX(e), MouseUtil.getY(e));
-        Canvas.IMAGE_GRAPHICS.fillRect(mouseCoords[0] - width / 2, mouseCoords[1] - width / 2, width, width);
+        Main.CURRENT_CANVAS.IMAGE_GRAPHICS.fillRect(mouseCoords[0] - width / 2, mouseCoords[1] - width / 2, width, width);
     }
 
     @Override
     public void handleDrag(MouseEvent e) {
-        Canvas.IMAGE_GRAPHICS.setColor(CURSOR_COLOR);
+        Main.CURRENT_CANVAS.IMAGE_GRAPHICS.setColor(CURSOR_COLOR);
         drawLine(e, DIAMETER);
     }
 
@@ -45,13 +45,13 @@ public class Pencil extends Cursor {
         if (xChange == 0 && yChange == 0) return;
 
         // store previous stroke to be restored
-        Stroke stroke = Canvas.IMAGE_GRAPHICS.getStroke();
+        Stroke stroke = Main.CURRENT_CANVAS.IMAGE_GRAPHICS.getStroke();
         // set stroke width to the parameter passed
-        Canvas.IMAGE_GRAPHICS.setStroke(new BasicStroke(width));
+        Main.CURRENT_CANVAS.IMAGE_GRAPHICS.setStroke(new BasicStroke(width));
         // draw the line, offset from the previous position as we don't want the lines to overlap, as that messes with transparency
-        Canvas.IMAGE_GRAPHICS.drawLine(lastMouse[0] + Math.clamp(xChange, -1, 1), lastMouse[1] + Math.clamp(yChange, -1, 1), newMouse[0], newMouse[1]);
+        Main.CURRENT_CANVAS.IMAGE_GRAPHICS.drawLine(lastMouse[0] + Math.clamp(xChange, -1, 1), lastMouse[1] + Math.clamp(yChange, -1, 1), newMouse[0], newMouse[1]);
         // restore stroke
-        Canvas.IMAGE_GRAPHICS.setStroke(stroke);
+        Main.CURRENT_CANVAS.IMAGE_GRAPHICS.setStroke(stroke);
     }
 
     private int[] fixMouseCoords(int x, int y) {

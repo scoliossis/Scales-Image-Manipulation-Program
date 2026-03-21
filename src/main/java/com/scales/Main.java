@@ -23,6 +23,11 @@ public class Main {
     public static final JFrame FRAME = new JFrame();
     public static Graphics2D FRAME_GRAPHICS;
 
+    public static Canvas CURRENT_CANVAS = new Canvas();
+    public static final List<Canvas> CANVAS_HIERARCHY = List.of(
+            CURRENT_CANVAS
+    );
+
     public static final Canvas CANVAS = new Canvas();
     public static final ResizeCanvasButton RESIZE_CANVAS_BUTTON = new ResizeCanvasButton();
     public static final Toolbar TOOLBAR = new Toolbar();

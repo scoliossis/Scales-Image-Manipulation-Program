@@ -10,8 +10,8 @@ import java.awt.event.MouseEvent;
 public class ResizeCanvasButton extends Element {
     public ResizeCanvasButton() {
         super(
-                () -> Main.CANVAS.undoTransform(Main.CANVAS.width.getAsInt(), Main.CANVAS.x.getAsInt()),
-                () -> Main.CANVAS.undoTransform(Main.CANVAS.height.getAsInt(), Main.CANVAS.y.getAsInt()),
+                () -> (int) (Canvas.canvasOffsetX + (Canvas.renderWidth * Main.CANVAS.scale)),
+                () -> (int) (Canvas.canvasOffsetY + (Canvas.renderHeight * Main.CANVAS.scale)),
                 () -> 10,
                 () -> 10
         );
@@ -30,10 +30,10 @@ public class ResizeCanvasButton extends Element {
         return true;
     }
 
-    // todo: dont actually resize until release
     @Override
     public boolean handleDrag(MouseEvent e) {
-        Main.CANVAS.resizeCanvas(MouseUtil.getX(e), MouseUtil.getY(e));
+        Canvas.renderWidth = Main.CANVAS.applyTransform(MouseUtil.getX(e), Canvas.canvasOffsetX);
+        Canvas.renderHeight = Main.CANVAS.applyTransform(MouseUtil.getY(e), Canvas.canvasOffsetY);
         return true;
     }
 
@@ -41,5 +41,10 @@ public class ResizeCanvasButton extends Element {
     public boolean handleHover(MouseEvent e) {
         Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR));
         return true;
+    }
+    
+    @Override
+    public void handleRelease(MouseEvent e) {
+        Main.CANVAS.resizeCanvas();
     }
 }

@@ -18,10 +18,10 @@ public abstract class Cursor {
 
     public final Canvas PARENT = Main.CANVAS;
     public BufferedImage getParentImage() {
-        return Canvas.CANVAS_IMAGE;
+        return Main.CURRENT_CANVAS.CANVAS_IMAGE;
     }
     public Graphics2D getParentGraphics() {
-        return Canvas.IMAGE_GRAPHICS;
+        return Main.CURRENT_CANVAS.IMAGE_GRAPHICS;
     }
 
     public abstract void handleClick(MouseEvent e);

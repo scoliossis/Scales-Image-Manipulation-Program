@@ -1,18 +1,59 @@
-# Scale's Image Manipulation Program
-https://www.bhasvic.ac.uk/media/pdf/computer-science-al-170844-specification-accredited-a-level-gce-computer-science-h446-874.pdf
-
----
-
 ## <u>Table of Contents</u>
-- [Analysis of the Problem](#Analysis-of-the-Problem)
-    - [Problem Identification](#Problem-Identification)
-        - etc (fill this at the end, im sure intellij doesn't have a thing to auto fill it)
-
+- [Analysis of the Problem](#analysis-of-the-problem)
+    * [Problem Identification](#problem-identification)
+    * [Stakeholders](#stakeholders)
+        + [General Purpose](#general-purpose)
+        + [Hobbyists](#hobbyists)
+        + [Professionals](#professionals)
+    * [Research](#research)
+        + [GNU Image Manipulation Program (GIMP)](#gnu-image-manipulation-program-gimp)
+        + [Microsoft Paint](#microsoft-paint)
+    * [Problem Solution](#problem-solution)
+        + [Language choice](#language-choice)
+        + [Problem Limitations](#problem-limitations)
+        + [Success Criteria](#success-criteria)
+- [Design of the Solution](#design-of-the-solution)
+    * [Decomposition](#decomposition)
+    * [Solution Description](#solution-description)
+        + [Computational Thinking](#computational-thinking)
+            - [Abstraction](#abstraction)
+            - [Decomposition](#decomposition-1)
+            - [Problem Recognition](#problem-recognition)
+        + [Justification of Structure](#justification-of-structure)
+            - [GUI](#gui)
+            - [Handling Inputs](#handling-inputs)
+            - [Manipulating Images](#manipulating-images)
+    * [Key Variables](#key-variables)
+    * [Testing](#testing)
+- [Development](#development)
+    * [Prototype 1](#prototype-1)
+        + [GUI](#gui-1)
+        + [Canvas](#canvas)
+        + [Mouse Inputs](#mouse-inputs)
+    * [Prototype 2](#prototype-2)
+        + [Element Class](#element-class)
+        + [Resizing the canvas](#resizing-the-canvas)
+        + [Fixing Transformations](#fixing-transformations)
+        + [Applying Transformations](#applying-transformations)
+    * [Prototype 3](#prototype-3)
+        + [Toolbar](#toolbar)
+        + [Refactoring Positions](#refactoring-positions)
+        + [Changing Colours](#changing-colours)
+    * [Prototype 4](#prototype-4)
+        + [Undo/Redoing](#undoredoing)
+        + [Rubber](#rubber)
+        + [Importing Images](#importing-images)
+- [Evaluation](#evaluation)
+    * [Testing to Inform Evaluation](#testing-to-inform-evaluation)
+        + [Functional Testing](#functional-testing)
+    * [Success of the Solution](#success-of-the-solution)
+    * [Description of the Final Product](#description-of-the-final-product)
+    * [Maintenance and Development](#maintenance-and-development)
 
 # Analysis of the Problem
 ## Problem Identification
 I am creating an image manipulation program.
-This is a type of program which allows the user to scale, crop, rotate and draw on existing images or a blank canvas to produce new images.
+This is a type of program which allows the user to scale, crop, rotate, and draw on existing images or a blank canvas to produce new images.
 This project is amenable to computational methods due to the possibility of performing actions which are challenging on paper.
 This includes erasing parts of an image and editing separate layers, which is why graphic design jobs require an image manipulation program.
 The aim of this project is to create a program which is straightforward to learn and use, yet still capable of complex image manipulation.
@@ -24,15 +65,18 @@ My project is made to be used as a general purpose image manipulation project.
 This means that there is variety in the skill level and features of my stakeholders which all need to be considered.
 Both hobbyists and professionals need to be accounted for when creating the project; this means features should be easily accessible with a high skill ceiling.
 Different fields of creativity, such as graphic designers and artists, can be accounted for separately; however, it is challenging to create a program simple enough for beginners and complex enough for experts.
+
 ### General Purpose
 - Being able to draw and erase is useful for artists and designers
 - Cropping and scaling images are useful outside creative jobs, such as teachers wanting to resize handouts.
 - Adding text to images is desired for news publications creating a lead image
+
 ### Hobbyists
 - They will require a simple GUI which is straightforward to navigate on first use
 - Runs well on low-quality setups as hobbyists do not necessarily have good hardware
 - Everything should be easy to understand without guides
 - Functions should be intuitive with experimentation with configuration
+
 ### Professionals
 - Each action should be configurable to meet any desires of the user
 - Complex effects should be easily applicable to the image
@@ -59,8 +103,8 @@ Below is a screenshot of the program.
 
 ### Microsoft Paint
 Microsoft's Paint program is the opposite end of the spectrum.
-Paint is lightweight, launching without a noticable delay and features a very user friendly GUI.
-It allows the user to draw on, crop, scale and rotate the image.
+Paint is lightweight, launching without a noticable delay, and features a very user friendly GUI.
+It allows the user to draw on, crop, scale, and rotate the image.
 The GUI is very simple and easy to navigate, not requiring any help.
 Paint is much less customizable than GIMP, features usually do not have many settings.
 For example, when scaling an image, antialiasing is forcefully enabled, which can cause images to look blury.
@@ -118,6 +162,7 @@ Image manipulation is a new field of research for me, which means that I will ne
 ## Decomposition
 <!--Break down the problem into smaller parts suitable for computational solutions justifying any decisions made.-->
 The program will be structured into subproblems which will be solved in turn.
+
 - GUI
     - Initialising
     - Toolbar
@@ -145,10 +190,11 @@ The program will be structured into subproblems which will be solved in turn.
 - Saving Images
 
 ## Solution Description
-### Justification of Structure
+### Computational Thinking
 <!--Explain and justify the structure of the solution.-->
 To come to this conclusion, I had to use computational thinking.
-Abstraction, Decomposition and Problem Recognition are all computational methods.
+Abstraction, Decomposition, and Problem Recognition are all computational methods.
+
 #### Abstraction
 Abstraction is the process of hiding the complexity of a problem by simplifying it.
 This is done by removing unnecessary details from the problem and replacing them with simpler, more abstract terms.
@@ -165,6 +211,7 @@ Problem recognition can clarify the problem and how it is possible to be solved 
 It allows me to compare new problems to previously solved problems and see how they relate to each other and saves me from reinventing the wheel.
 For example, Java comes packaged with a data type which can store an image, which saves me making my own image class.
 
+### Justification of Structure
 <!--Describe the parts of the solution using algorithms justifying how these algorithms form a complete solution to the problem.-->
 #### GUI
 Creating the window is simply handled by the JavaFX framework.
@@ -261,7 +308,7 @@ Each of these keybinds needs access to the state of the canvas, so the canvas st
 Manipulating images can be done by using the Java ImageIO library.
 This library allows for the reading and writing of images in a variety of formats.
 Reading images is required for editing pre-existing images, and writing images is required for saving images.
-The library also allows for the manipulation of images, such as drawing, scaling, cropping, rotating and drawing.
+The library also allows for the manipulation of images, such as drawing, scaling, cropping, rotating, and drawing.
 Below is an example of how to draw to an image. The image fed to the function will have a rectangle drawn to it.
 ```java
 public static void drawRectToImage(BufferedImage image, int x, int y, int width, int height) {
@@ -278,7 +325,7 @@ public static void saveImage(BufferedImage image) throws IOException {
 }
 ```
 
-With just these small steps, it is already possible to create a UI, handle an input, manipulate an image and output the modified image.
+With just these small steps, it is already possible to create a UI, handle an input, manipulate an image, and output the modified image.
 
 <!--TODO: Describe usability features to be included in the solution-->
 
@@ -530,7 +577,7 @@ public abstract class Element {
 I later decided to remove the priority variable.
 This is because I believe it is more readable to have a handwritten list of each element in order, as opposed to allowing each to define its own priority.
 Canvas is changed to extend Element.
-The draw function was already implemented, so I just need to implement the handleClick, handleDrag and handleHover functions.
+The draw function was already implemented, so I just need to implement the handleClick, handleDrag, and handleHover functions.
 The handleDrag function for the canvas is currently handled by the MouseMotionListener, so I moved its code to the Canvas class.
 This makes the Canvas class change to below:
 ```java
@@ -826,7 +873,7 @@ public int undoTransform(int n, int offset) {
 These functions also fix the newly added "scale" variable, which I plan to use to add zooming in/out to the canvas.
 
 ### Applying Transformations
-Currently, the canvas cannot be translated, scaled or rotated, which are the three cardinal transformations.
+Currently, the canvas cannot be translated, scaled, or rotated, which are the three cardinal transformations.
 To modify translation upon the y-axis, I will need an event which is posted when the mouse wheel is scrolled.
 In Main.java the initialiseGUI function is updated to register this new listener:
 ```java
@@ -856,7 +903,7 @@ private static void initialiseGUI() {
 }
 ```
 And then we need this class to allow other classes to know which keys are currently pressed.
-This can be done using a HashMap as it has a constant time complexity for adding, removing and getting an element.
+This can be done using a HashMap as it has a constant time complexity for adding, removing, and getting an element.
 This isn't necessarily faster, as the number of keys pressed is usually a single digit and the computation time of adding to a hashmap is longer than a simple array.
 However, the syntax of HashMap is more readable, as well as it ensuring no duplicate keys are added.
 ```java
@@ -962,7 +1009,6 @@ This concludes prototype 2; I believe it is possible to easily shape this protot
 The Element class allows me to easily add new elements to the GUI, which should make it easy to add new features.
 The listener classes implemented provide useful utilities for developing future features.
 And using the JavaFX graphics library allows me to easily add complex features such as antialiasing and drawing circles.
-
 
 ## Prototype 3
 ### Toolbar
@@ -1197,7 +1243,7 @@ public Toolbar() {
     );
 }
 ```
-This saves time, makes the code more readable and runs faster.
+This saves time, makes the code more readable, and runs faster.
 It is easier to follow the code when the rectangle can only be updated in one place.
 The code can run faster as each Element's rectangle is never updated unnecessarily.
 
@@ -1474,7 +1520,7 @@ private static void initialiseGUI() {
     FRAME.setDropTarget(new FileDropListener());
 }
 ```
-and this listener parses the file dropped onto it as an image:
+and this listener parses the file dropped onto it as an image, it works for all major image formats:
 ```java
 public class FileDropListener extends DropTarget { 
     @Override
@@ -1497,11 +1543,64 @@ public class FileDropListener extends DropTarget {
     }
 }
 ```
-Which works for all common image formats, below is a copyright-free smiley face I imported:
+To override the current canvas image, I created a function which clears the old one and replaces it:
+```java
+public void setCanvasImage(BufferedImage image) {
+    // store width and height of the image from before change.
+    int oldWidth = this.CANVAS_IMAGE.getWidth(), oldHeight = this.CANVAS_IMAGE.getHeight();
+    
+    // clear old image
+    this.IMAGE_GRAPHICS.dispose();
+    
+    // out with the old, in with the new
+    this.CANVAS_IMAGE = image;
+    this.IMAGE_GRAPHICS = (Graphics2D) this.CANVAS_IMAGE.getGraphics();
+    
+    // offset the canvas to still be centered on the same point
+    canvasOffsetX = (int) (canvasOffsetX + ((oldWidth - this.CANVAS_IMAGE.getWidth()) / 2d * this.scale));
+    canvasOffsetY = (int) (canvasOffsetY + ((oldHeight - this.CANVAS_IMAGE.getHeight()) / 2d * this.scale));
+}
+```
+
+Below is a copyright-free smiley face I imported:
 
 ![smileyFaceCool.png](repo/smileyFaceCool.png)
 
 It should also be possible to import images via CTRL+V.
+This is slightly more challenging as the clipboard can hold many types of data.
+For this project we are only concerned with processing the clipboard if it contains an image or a file.
+If the clipboard contains a file, we read the image and set the canvas image to it.
+```java
+public static void handlePaste() throws IOException, UnsupportedFlavorException {
+    // ... 
+    // get the first file in the clipboard, parse it as an image
+    BufferedImage bufferedImage = ImageIO.read(((List<File>) t.getTransferData(DataFlavor.javaFileListFlavor)).getFirst());
+    if (bufferedImage == null) return;
+
+    Main.CANVAS.setCanvasImage(bufferedImage);
+    // ...
+}
+```
+If the clipboard contains an image, we buffer that image and set the canvas image to it.
+```java
+public static void handlePaste() throws IOException, UnsupportedFlavorException {
+    // ...
+    Image image = (Image) t.getTransferData(DataFlavor.imageFlavor);
+
+    // buffer the image from the clipboard
+    BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), Canvas.CANVAS_IMAGE.getType());
+    Graphics2D g = bufferedImage.createGraphics();
+    g.drawImage(image, 0, 0, null);
+    g.dispose();
+
+    // update the canvas image
+    Main.CANVAS.setCanvasImage(bufferedImage);
+    // ...
+}
+```
+This allows us to easily take a screenshot and add it straight to the canvas.
+
+![inception.png](repo/inception.png)
 
 # Evaluation
 ## Testing to Inform Evaluation
@@ -1510,7 +1609,6 @@ It should also be possible to import images via CTRL+V.
 Throughout the development phase I found and fixed bugs, so that the final product was robust.
 Through my testing, all classes function as intended with no logic or syntax errors.
 <!--Provide annotated evidence of usability testing (user feedback).-->
-
 
 ## Success of the Solution
 The 
@@ -1533,12 +1631,16 @@ Below is an updated table on the success of my solution compared to the original
 |      Scaling       | ❌   |
 |       Moving       | ❌   |
 |      Rotating      | ❌   |
-|     Importing      | ❌   |
-|     Exporting      | ❌   |
+|     Importing      | ✅   |
+|     Exporting      | ✅   |
 | Usability Features | ✅   |
 
 ## Description of the Final Product
-[annotated picture]
+The final product is a functional image manipulation program designed for both hobbyists and general users. 
+It allows users to create, edit, and export images with a variety of tools while maintaining a relatively simple and intuitive interface.
+The program’s design balances usability and functionality. 
+While it does not include every advanced feature found in professional software like GIMP, it provides a solid foundation for common image manipulation tasks. 
+The interface is lightweight and responsive, enabling the user to work without delays or complex configurations.
 
 ## Maintenance and Development
 Throughout the development process I used object-oriented programming.

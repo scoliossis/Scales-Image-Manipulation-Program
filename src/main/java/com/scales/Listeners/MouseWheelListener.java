@@ -34,7 +34,7 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
         else {
             // scrolling just by "getUnitsToScroll" is very slow, so we multiply it by a constant
             int scrollAmount = -e.getUnitsToScroll() * SCALE_INCREMENT;
-            if (KeyListener.isKeyDown(KeyEvent.VK_SHIFT)) Canvas.canvasOffsetX += scrollAmount;
+            if (KeyListener.isKeyDown(KeyEvent.VK_SHIFT)) Canvas.canvasOffsetX -= scrollAmount;
             else Canvas.canvasOffsetY += scrollAmount;
         }
     }
