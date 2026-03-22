@@ -4,7 +4,6 @@ import com.scales.Elements.impl.Canvas;
 import com.scales.Main;
 import com.scales.Utils.MouseUtil;
 
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
 
 public class MouseWheelListener implements java.awt.event.MouseWheelListener {
@@ -12,7 +11,7 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        if (KeyListener.isKeyDown(KeyEvent.VK_CONTROL)) {
+        if (e.isControlDown()) {
             // store old scale
             double oldScale = Main.CANVAS.scale;
             
@@ -34,7 +33,7 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
         else {
             // scrolling just by "getUnitsToScroll" is very slow, so we multiply it by a constant
             int scrollAmount = -e.getUnitsToScroll() * SCALE_INCREMENT;
-            if (KeyListener.isKeyDown(KeyEvent.VK_SHIFT)) Canvas.canvasOffsetX -= scrollAmount;
+            if (e.isShiftDown()) Canvas.canvasOffsetX -= scrollAmount;
             else Canvas.canvasOffsetY += scrollAmount;
         }
     }

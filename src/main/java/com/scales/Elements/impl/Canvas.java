@@ -35,23 +35,27 @@ public class Canvas extends Element {
 
         g.clipRect(0, 0, this.width.getAsInt(), this.height.getAsInt());
 
-        // todo: fix upper bound
-        int leftCulled = Math.clamp(canvasOffsetX < 0 ? (int) (Math.abs(canvasOffsetX) / this.scale) : 0, 0, Integer.MAX_VALUE);
-        int topCulled = Math.clamp(canvasOffsetY < 0 ? (int) (Math.abs(canvasOffsetY) / this.scale) : 0, 0, Integer.MAX_VALUE);
+        // get the min x,y values of the canvas that are visible.
+        int leftCulled = (int) (Math.max(canvasOffsetX < 0 ? Math.abs(canvasOffsetX) : 0, 0) / this.scale);
+        int topCulled = (int) (Math.max(canvasOffsetY < 0 ? Math.abs(canvasOffsetY) : 0, 0) / this.scale);
+
+        // undo canvas scaling for images.
+        g.scale(1/this.scale, 1/this.scale);
 
         for (Canvas canvas : Main.CANVAS_HIERARCHY) {
-            int rightCulled = Math.min(canvas.CANVAS_IMAGE.getWidth()-leftCulled-1, (int) Math.ceil(Main.FRAME.getWidth() / this.scale) + 1);
-            int bottomCulled = Math.min(canvas.CANVAS_IMAGE.getHeight()-topCulled-1, (int) Math.ceil(Main.FRAME.getHeight() / this.scale) + 1);
+            // get the max x,y values of the canvas that are visible.
+            int rightCulled = (int) Math.min(canvas.CANVAS_IMAGE.getWidth()-leftCulled-1, Math.ceil(Main.FRAME.getWidth()/this.scale)+1);
+            int bottomCulled = (int) Math.min(canvas.CANVAS_IMAGE.getHeight()-topCulled-1, Math.ceil(Main.FRAME.getHeight()/this.scale)+1);
 
             if (rightCulled <= 0 || bottomCulled <= 0) continue;
 
-            g.drawImage(
-                    // this works as an optimisation, but it also fixes in issue where large images become invisible when zoomed in too far
-                    canvas.CANVAS_IMAGE.getSubimage(leftCulled, topCulled, rightCulled, bottomCulled),
-                    leftCulled,
-                    topCulled,
-                    null
-            );
+            // crop the image to the visible area.
+            BufferedImage croppedImage = canvas.CANVAS_IMAGE.getSubimage(leftCulled, topCulled, rightCulled, bottomCulled);
+            // todo: resize the image when the scale changes
+            // scale the image with antialiasing
+            Image scaledImage = croppedImage.getScaledInstance((int) (rightCulled*this.scale), (int) (bottomCulled*this.scale), Image.SCALE_AREA_AVERAGING);
+
+            g.drawImage(scaledImage, (int) (leftCulled*this.scale), (int) (topCulled*this.scale), null);
         }
 
         g.setClip(null);
@@ -98,11 +102,11 @@ public class Canvas extends Element {
     }
 
     public void setCanvasImage(BufferedImage image) {
+        renderWidth = image.getWidth();
+        renderHeight = image.getHeight();
+
         this.IMAGE_GRAPHICS.dispose();
         this.CANVAS_IMAGE = image;
         this.IMAGE_GRAPHICS = (Graphics2D) image.getGraphics();
-
-        renderWidth = image.getWidth();
-        renderHeight = image.getHeight();
     }
 }
