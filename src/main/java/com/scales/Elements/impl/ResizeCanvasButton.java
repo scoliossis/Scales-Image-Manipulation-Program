@@ -17,23 +17,31 @@ public class ResizeCanvasButton extends Element {
         );
     }
 
+    private boolean resizing = false;
+
     @Override
     public void draw(Graphics2D g) {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, width.getAsInt(), height.getAsInt());
         g.setColor(Color.BLACK);
         g.drawRect(0, 0, width.getAsInt(), height.getAsInt());
+
+        if (resizing) {
+            g.setColor(new Color(99, 108, 255,100));
+            g.drawRect(-Canvas.renderWidth, -Canvas.renderHeight, Canvas.renderWidth, Canvas.renderHeight);
+        }
     }
 
     @Override
     public boolean handleClick(MouseEvent e) {
+        resizing = true;
         return true;
     }
 
     @Override
     public boolean handleDrag(MouseEvent e) {
-        Canvas.renderWidth = Main.CANVAS.applyTransform(MouseUtil.getX(e), Canvas.canvasOffsetX);
-        Canvas.renderHeight = Main.CANVAS.applyTransform(MouseUtil.getY(e), Canvas.canvasOffsetY);
+        Canvas.renderWidth = Math.max(Main.CANVAS.applyTransform(MouseUtil.getX(e), Canvas.canvasOffsetX), 1);
+        Canvas.renderHeight = Math.max(Main.CANVAS.applyTransform(MouseUtil.getY(e), Canvas.canvasOffsetY), 1);
         return true;
     }
 
@@ -45,6 +53,7 @@ public class ResizeCanvasButton extends Element {
     
     @Override
     public void handleRelease(MouseEvent e) {
+        resizing = false;
         Main.CANVAS.resizeCanvas();
     }
 }

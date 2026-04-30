@@ -9,6 +9,7 @@ import com.scales.Elements.impl.ColourPicker.*;
 import com.scales.Elements.impl.ResizeCanvasButton;
 import com.scales.Elements.impl.Toolbar;
 import com.scales.Listeners.*;
+import com.scales.Utils.ImageRenderingUtil;
 import lombok.Setter;
 
 import javax.swing.*;
@@ -96,6 +97,7 @@ public class Main {
         while (running) {
             // drawing the program with a frame cap makes the program run smoother than attempting to draw every frame
             if (System.currentTimeMillis() - lastFrameMS < FRAME_TIME_GAP && !bufferStrategy.contentsRestored()) continue;
+            ImageRenderingUtil.handleAntiAliasing();
 
             // create graphics
             FRAME_GRAPHICS = (Graphics2D) bufferStrategy.getDrawGraphics();

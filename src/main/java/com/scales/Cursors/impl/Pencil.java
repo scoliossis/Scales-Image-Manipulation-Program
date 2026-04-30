@@ -9,6 +9,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
+// todo: fix transparency
+//  draw to somewhere separate to be faster and stop the antialiasing flickering when drawing
 public class Pencil extends Cursor {
     public int DIAMETER = 10;
 
@@ -52,6 +54,8 @@ public class Pencil extends Cursor {
         Main.CURRENT_CANVAS.IMAGE_GRAPHICS.drawLine(lastMouse[0] + Math.clamp(xChange, -1, 1), lastMouse[1] + Math.clamp(yChange, -1, 1), newMouse[0], newMouse[1]);
         // restore stroke
         Main.CURRENT_CANVAS.IMAGE_GRAPHICS.setStroke(stroke);
+
+        Main.CURRENT_CANVAS.queueAntialiasCanvas();
     }
 
     private int[] fixMouseCoords(int x, int y) {
@@ -63,6 +67,5 @@ public class Pencil extends Cursor {
 
     @Override
     public void handleRelease(MouseEvent e) {
-
     }
 }

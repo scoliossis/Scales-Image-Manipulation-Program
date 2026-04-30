@@ -17,6 +17,9 @@ import java.util.List;
 public class ImageFileUtil {
     public static void loadDroppedImage(DropTargetDropEvent dtde) {
         try {
+            // todo: not working? (ig need to async)
+            Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
             // accept drop and get the files dropped onto the frame
             dtde.acceptDrop(DnDConstants.ACTION_COPY);
             // check that the dropped item is files
@@ -31,6 +34,7 @@ public class ImageFileUtil {
 
             // success!
             dtde.dropComplete(true);
+            Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -51,10 +55,12 @@ public class ImageFileUtil {
             outputName = defaultOutputName + outputIndex;
         }
         ImageIO.write(Main.CURRENT_CANVAS.CANVAS_IMAGE, "PNG", new File(outputFolder.getAbsolutePath() + "/"+outputName+".png"));
+        System.out.println("Saved image to " + outputFolder.getAbsolutePath() + "/" + outputName + ".png");
     }
 
     // https://stackoverflow.com/questions/7834768/setting-images-to-clipboard-java
     public static void handlePaste() throws IOException, UnsupportedFlavorException {
+        Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Transferable t = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
 
         Image clipboardImage;
@@ -73,6 +79,7 @@ public class ImageFileUtil {
 
         // update the canvas image
         Main.CURRENT_CANVAS.setCanvasImage(bufferImage(clipboardImage));
+        Main.FRAME.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
 
     private static BufferedImage bufferImage(Image image) {

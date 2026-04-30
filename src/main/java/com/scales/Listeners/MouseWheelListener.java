@@ -12,6 +12,8 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         if (e.isControlDown()) {
+            Canvas.queueAntialiasAll();
+
             // store old scale
             double oldScale = Main.CANVAS.scale;
             
@@ -31,6 +33,8 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
             Canvas.canvasOffsetY = (int) (mouseY - ((mouseY - canvasY) * scaleFactor));
         }
         else {
+            Canvas.queueAntialiasAll();
+            
             // scrolling just by "getUnitsToScroll" is very slow, so we multiply it by a constant
             int scrollAmount = -e.getUnitsToScroll() * SCALE_INCREMENT;
             if (e.isShiftDown()) Canvas.canvasOffsetX -= scrollAmount;

@@ -2,6 +2,7 @@ package com.scales.Elements.impl;
 
 import com.scales.Elements.Element;
 import com.scales.Main;
+import com.scales.Utils.ImageRenderingUtil;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -11,6 +12,7 @@ public class Canvas extends Element {
     private static final int DEFAULT_CANVAS_WIDTH = 200, DEFAULT_CANVAS_HEIGHT = 200;
 
     public BufferedImage CANVAS_IMAGE = new BufferedImage(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+    public Image RENDERED_IMAGE = CANVAS_IMAGE;
     public Graphics2D IMAGE_GRAPHICS = (Graphics2D) CANVAS_IMAGE.getGraphics();
 
     public static int
@@ -30,41 +32,32 @@ public class Canvas extends Element {
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, this.width.getAsInt(), this.height.getAsInt());
-
         g.clipRect(0, 0, this.width.getAsInt(), this.height.getAsInt());
 
-        // get the min x,y values of the canvas that are visible.
-        int leftCulled = (int) (Math.max(canvasOffsetX < 0 ? Math.abs(canvasOffsetX) : 0, 0) / this.scale);
-        int topCulled = (int) (Math.max(canvasOffsetY < 0 ? Math.abs(canvasOffsetY) : 0, 0) / this.scale);
-
-        // undo canvas scaling for images.
+        // undo canvas scaling for images, their scaling is handled by the ImageRenderingUtil class.
         g.scale(1/this.scale, 1/this.scale);
 
+        int x = ImageRenderingUtil.getRenderPos(canvasOffsetX, this.scale);
+        int y = ImageRenderingUtil.getRenderPos(canvasOffsetY, this.scale);
+
+        g.drawImage(ImageRenderingUtil.getBackground(false), x, y, null);
+
         for (Canvas canvas : Main.CANVAS_HIERARCHY) {
-            // get the max x,y values of the canvas that are visible.
-            int rightCulled = (int) Math.min(canvas.CANVAS_IMAGE.getWidth()-leftCulled-1, Math.ceil(Main.FRAME.getWidth()/this.scale)+1);
-            int bottomCulled = (int) Math.min(canvas.CANVAS_IMAGE.getHeight()-topCulled-1, Math.ceil(Main.FRAME.getHeight()/this.scale)+1);
-
-            if (rightCulled <= 0 || bottomCulled <= 0) continue;
-
-            // crop the image to the visible area.
-            BufferedImage croppedImage = canvas.CANVAS_IMAGE.getSubimage(leftCulled, topCulled, rightCulled, bottomCulled);
-            // todo: resize the image when the scale changes
-            // scale the image with antialiasing
-            Image scaledImage = croppedImage.getScaledInstance((int) (rightCulled*this.scale), (int) (bottomCulled*this.scale), Image.SCALE_AREA_AVERAGING);
-
-            g.drawImage(scaledImage, (int) (leftCulled*this.scale), (int) (topCulled*this.scale), null);
+            g.drawImage(getImageToRender(canvas), x, y, null);
         }
 
         g.setClip(null);
+    }
+
+    private Image getImageToRender(Canvas canvas) {
+        return ImageRenderingUtil.ANTIALIAS_QUEUE.containsKey(canvas) ? ImageRenderingUtil.getVisibleImage(canvas, false) : canvas.RENDERED_IMAGE;
     }
 
     @Override
     public boolean handleClick(MouseEvent e) {
         //HandleUndoTimeline.bufferCanvas();
         Main.currentCursor.handleClick(e);
+        Main.CURRENT_CANVAS.queueAntialiasCanvas();
 
         return true;
     }
@@ -72,6 +65,7 @@ public class Canvas extends Element {
     @Override
     public boolean handleDrag(MouseEvent e) {
         Main.currentCursor.handleDrag(e);
+        Main.CURRENT_CANVAS.queueAntialiasCanvas();
 
         return true;
     }
@@ -98,7 +92,24 @@ public class Canvas extends Element {
             canvas.IMAGE_GRAPHICS = (Graphics2D) canvas.CANVAS_IMAGE.getGraphics();
 
             canvas.IMAGE_GRAPHICS.drawImage(oldImage, 0, 0, oldImage.getWidth(), oldImage.getHeight(), null);
+            canvas.queueAntialiasCanvas();
         }
+
+        queueAntialiasBackground();
+    }
+
+    public static void queueAntialiasAll() {
+        for (Canvas canvas : Main.CANVAS_HIERARCHY) canvas.queueAntialiasCanvas();
+        queueAntialiasBackground();
+    }
+
+    public void queueAntialiasCanvas() {
+        ImageRenderingUtil.ANTIALIAS_QUEUE.put(this, System.currentTimeMillis());
+    }
+
+    public static void queueAntialiasBackground() {
+        if (ImageRenderingUtil.backgroundLastQueued == -1) ImageRenderingUtil.lastBackgroundScale = Main.CANVAS.scale;
+        ImageRenderingUtil.backgroundLastQueued = System.currentTimeMillis();
     }
 
     public void setCanvasImage(BufferedImage image) {
@@ -108,5 +119,6 @@ public class Canvas extends Element {
         this.IMAGE_GRAPHICS.dispose();
         this.CANVAS_IMAGE = image;
         this.IMAGE_GRAPHICS = (Graphics2D) image.getGraphics();
+        ImageRenderingUtil.antialiasImage(this);
     }
 }
