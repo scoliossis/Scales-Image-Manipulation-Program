@@ -103,13 +103,13 @@ Below is a screenshot of the program.
 
 ### Microsoft Paint
 Microsoft's Paint program is the opposite end of the spectrum.
-Paint is lightweight, launching without a noticable delay, and features a very user friendly GUI.
+Paint is lightweight, launching without a noticeable delay, and features a very user-friendly GUI.
 It allows the user to draw on, crop, scale, and rotate the image.
-The GUI is very simple and easy to navigate, not requiring any help.
-Paint is much less customizable than GIMP, features usually do not have many settings.
-For example, when scaling an image, antialiasing is forcefully enabled, which can cause images to look blury.
-Complex effects such as blurring are not a feature, and oddly opacity is applied seperately to the colour picker.
-The GUI only features buttons at the top, which is compact and means you do not need to search through seperate GUI's to find the setting you are searching for.
+The GUI is basic and easy to navigate, not requiring any help.
+Paint is much less customisable than GIMP, features usually have few settings.
+For example, when scaling an image, antialiasing is forcefully enabled, which can cause images to look blurred.
+Complex effects such as blurring are not a feature, and oddly, opacity is applied separately to the colour picker.
+The GUI only features buttons at the top, which is compact and means you do not need to search through separate GUI to find the setting you are searching for.
 Below is a screenshot of the program.
 
 ![mspaint11.png](repo/mspaint11.png)
@@ -117,8 +117,8 @@ Below is a screenshot of the program.
 ## Problem Solution
 The research done prior has informed me of the possible pitfalls of my project.
 GIMP struggles with user-friendliness due to its verbosity, having buttons not described and common features hidden from easy access.
-Paint struggles with the opposite, all the features are easily accessible, however, it allows very little to be done, making some simple image manipulation hard or impossible.
-The layout of Paint is very nice, however, I believe it is still bloated compared to the number of features provided. GIMP has many useful features which, while complicated at first, are required for a useful program.
+Paint struggles with the opposite, all the features are easily accessible; however, it allows very little to be done, making some simple image manipulation hard or impossible.
+The layout of Paint is very nice; however, I believe it is still bloated compared to the number of features provided. GIMP has many useful features which, while complicated at first, are required for a useful program.
 I believe that GIMP’s idea of each button having sub-buttons is a good idea for the compactness of the GUI.
 I believe the optional sub-settings should be accessible but not forced to be configured on each use.
 For my solution to thrive, I will need to narrow down essential features.
@@ -158,58 +158,96 @@ Image manipulation is a new field of research for me, which means that I will ne
 |     Exporting      | Able to export images from the program          |
 | Usability Features | Keybinds like undo and redo                     |
 
-# Design of the Solution
-## Decomposition
-<!--Break down the problem into smaller parts suitable for computational solutions justifying any decisions made.-->
-The program will be structured into subproblems which will be solved in turn.
-
-- GUI
-    - Initialising
-    - Toolbar
-        - Pencil
-        - Fill
-        - Select
-        - Colour picker
-    - Canvas
-    - Transforming the canvas
-        - Zooming in/out
-        - Moving the canvas
-- Handling Inputs
-    - Clicking on elements of the GUI
-        - Appropriately changing the cursor's position relative to transformations of canvas
-    - Keyboard input
-        - CTRL+Z / CTRL+Y
-        - CTRL+C / CTRL+V / CTRL+X
-        - CTRL+A
-        - CTRL+S
-- Manipulating Images
-    - Scaling
-        - Cropping
-        - Rotating
-        - Drawing
-- Saving Images
-
-## Solution Description
 ### Computational Thinking
 <!--Explain and justify the structure of the solution.-->
-To come to this conclusion, I had to use computational thinking.
+To structure my and plan my program effectively, I had to use computational thinking. 
 Abstraction, Decomposition, and Problem Recognition are all computational methods.
 
 #### Abstraction
-Abstraction is the process of hiding the complexity of a problem by simplifying it.
-This is done by removing unnecessary details from the problem and replacing them with simpler, more abstract terms.
-For example, this program does not need to worry about the difficulties of creating a GUI from scratch, as JavaFX can handle this for us.
+Abstraction involves simplifying a problem by removing unnecessary detail and focusing only on what is essential.
+In this project, abstraction is used extensively to reduce both development and user complexity.
+At a system level, I abstract away low-level graphics operations by using Java's existing libraries `Graphics2D` and `BufferedImage`.
+This avoids the need to manually handle each pixel and interfacing with the GPU while still allowing control when needed.
+At a design level, I represent complex concepts using simplified models.
+The canvas is treated as a single `BufferedImage`, regardless of how it is displayed or transformed on screen.
+Tools such as pencil, fill, and selection are abstracted into a common `Cursor` class, allowing consistent handling of different behaviours.
+UI components are abstracted into reusable `Element` objects, meaning interaction logic can be applied uniformly.
+This abstraction reduces redundancy, improves readability, and allows features to be extended without rewriting core logic.
 
 #### Decomposition
-This program has been divided into subproblems which will be solved in turn, this is known as decomposition.
-Each element can be solved independently, and the program can be built up from these subproblems.
-It makes sense to tackle these subproblems from their smallest parts and then build up the program from there.
+Decomposition is the process of breaking a large problem into smaller, more manageable subproblems which is essential for a project of this scale.
+The system is divided into distinct components including GUI rendering, input handling, image manipulation, and file handling.
+GUI rendering includes drawing the canvas, toolbar, and UI elements.
+Input handling includes mouse and keyboard events.
+Image manipulation includes drawing, scaling, cropping, and rotating.
+File handling includes importing and exporting images.
+Each of these is further broken down.
+For example, input handling is split into mouse and keyboard events, and image manipulation is split into operations such as drawing, filling, and erasing.
+This structure allows each component to be developed, tested, and debugged independently.
+It also improves maintainability, as changes in one module do not significantly impact others.
 
-#### Problem Recognition
-Each subproblem can be recognisable as a problem, which has previously been solved before.
-Problem recognition can clarify the problem and how it is possible to be solved by computational methods.
-It allows me to compare new problems to previously solved problems and see how they relate to each other and saves me from reinventing the wheel.
-For example, Java comes packaged with a data type which can store an image, which saves me making my own image class.
+#### Pattern Recognition
+Pattern recognition involves identifying similarities between problems and reusing existing solutions.
+This reduces development time and increases reliability; in this project, several recurring patterns were identified.
+Tools' behaviour is a pattern, as each tool takes input coordinates and modifies the image at the input coordinates.
+This is implemented using a `Cursor` class which contains a `draw` method which takes a `BufferedImage` and coordinates and modifies the image at those coordinates.
+These tools can therefore share a common interface or superclass.
+Additionally, existing solutions provided by Java libraries such as `ImageIO` are reused rather than reinvented.
+This ensures robustness and efficiency.
+
+#### Thinking Logically
+Thinking logically involves designing a program so that it can make decisions based on data it receives, rather than always following the same sequence of instructions.
+In this project, logical thinking is used to control how the program responds to user input.
+For example, when the user clicks on the screen, the program checks which tool is currently selected.
+If the pencil tool is selected, the program will draw on the image, whereas if the rubber tool is selected, it will erase part of the image.
+Logical conditions are also used to ensure that actions are valid.
+For instance, the program checks whether the mouse position is within the bounds of the canvas before applying any changes.
+If this condition is not met, the program does not perform the action, preventing errors.
+These decisions allow the program to branch into different paths, affecting the flow of execution and enabling different outcomes depending on user input and program state.
+This ensures the program behaves correctly, consistently, and predictably.
+
+#### Thinking Concurrently
+Thinking concurrently involves designing a program so that multiple tasks can be processed at the same time, rather than strictly one after another.
+In this project, concurrency is considered in how the program handles rendering and user input simultaneously.
+The program continuously updates the display using a draw loop, while also responding to mouse and keyboard inputs on a separate thread.
+These tasks must work together without interfering with each other as they do not rely on each other's data.
+It is important to identify which parts of the program can run independently and which depend on shared data.
+Concurrency improves the responsiveness of the program and allows for smoother user interaction.
+However, it also increases complexity, as shared data must be managed carefully to avoid inconsistent states or unexpected behaviour.
+
+# Design of the Solution
+## Solution Description
+### Decomposition
+<!--Break down the problem into smaller parts suitable for computational solutions justifying any decisions made.-->
+The program will be structured into subproblems which will be solved in turn.
+
+Rendering algorithm:
+1. Prepare the drawing buffer
+2. Apply translation and scaling to the canvas
+3. Draw the canvas image
+4. Reset transformations
+5. Draw UI elements such as the toolbar on top
+6. Display the buffer
+
+This ensures correct layering and prevents graphical issues such as flickering.
+
+Undo and redo system:
+1. Before modifying the image, store the current state in a buffer
+2. On undo, retrieve the previous state
+3. On redo, restore a state from a secondary buffer
+
+This ensures user actions are reversible and improves usability.
+
+Input handling algorithm:
+1. Detect user input such as mouse and keyboard events
+2. Determine the current tool
+3. Translate screen coordinates to canvas coordinates, accounting for scaling and position
+4. Apply the corresponding tools' action to the image
+
+This ensures consistent behaviour regardless of zoom level or canvas position.
+
+Overall, computational thinking allows the program to be modular, scalable, and maintainable.
+It also allows for a complex problem to be solved intuitively.
 
 ### Justification of Structure
 <!--Describe the parts of the solution using algorithms justifying how these algorithms form a complete solution to the problem.-->
@@ -222,7 +260,7 @@ The close operation needs to be set, which tells the program to end when the GUI
 ```java 
 private static final JFrame FRAME = new JFrame("window title");
 
-public static void main(String[] args) {
+void main(String[] args) {
     FRAME.setSize(1000, 1000);
     FRAME.setLocationRelativeTo(null);
     FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -299,7 +337,7 @@ public class MouseListener implements java.awt.event.MouseListener {
     }
 }
 ```
-The mouse listener will need to keep track of the current state of the UI.
+The mouse listener will need to track the current state of the UI.
 For the keyboard listener, keys such as CTRL+Z will need to be fed a previous state of the UI to restore.
 CTRL+V will need to access the clipboard, and CTRL+A will need to select the image.
 Each of these keybinds needs access to the state of the canvas, so the canvas state should be a global variable.
@@ -479,7 +517,7 @@ However, when the mouse is moved quickly, there are clear gaps:
 This happens because the mouseDragged MouseEvent is not called for each pixel the mouse has moved.
 The event is called when a change is detected in the mouse movement.
 With a high DPI mouse, it is possible to move the mouse more than a pixel before the listeners detects the movement, causing the holes.
-To fix this issue, I store the position of the previous mouse movement, and draw a line from the previous position to the current position.
+To fix this issue, I store the position of the previous mouse movement and draw a line from the previous position to the current position.
 ```java
 private static int lastX, lastY;
 public void mouseDragged(MouseEvent e) {
@@ -624,7 +662,7 @@ public class Canvas extends Element {
 
 }
 ```
-Since lastMouseDragX and lastMouseDragY from MouseMotionListener are both now needed in Canvas, it doesn't make sense to encapsulate them any more.
+Since the lastMouseDragX and lastMouseDragY from MouseMotionListener are both now needed in Canvas, it doesn't make sense to encapsulate them any more.
 lastMouseDragX and lastMouseDragY are made public, which changes MouseListener's mouseReleased function to:
 ```java
 public void mouseReleased(MouseEvent e) {
@@ -790,7 +828,7 @@ public class ResizeCanvasButton extends Element {
     }
 }
 ```
-Canvas.resizeCanvas was created too which is shown below:
+Canvas.resizeCanvas was created too, which is shown below:
 ```java
 public void resizeCanvas(int width, int height) {
     // store the old image so it can be redrawn to the new resized image.
@@ -905,7 +943,7 @@ private static void initialiseGUI() {
 And then we need this class to allow other classes to know which keys are currently pressed.
 This can be done using a HashMap as it has a constant time complexity for adding, removing, and getting an element.
 This isn't necessarily faster, as the number of keys pressed is usually a single digit and the computation time of adding to a hashmap is longer than a simple array.
-However, the syntax of HashMap is more readable, as well as it ensuring no duplicate keys are added.
+However, the syntax of HashMap is more readable, as well as ensuring no duplicate keys are added.
 ```java
 public class KeyListener extends KeyAdapter {
     private static final HashMap<Integer, Boolean> KEYS_PRESSED = new HashMap<>();
@@ -955,8 +993,8 @@ This allows us to zoom in and see each pixel as shown below:
 However, this zooming is not very user-friendly.
 The first glaring issue was easily fixable, it was too slow.
 The second issue was that it always zoomed in centered on the top left of the canvas.
-This was not so easily fixed, however, I believe my solution is intuitive.
-When zooming in, the pixel your mouse is hovering, is the same as before zooming in.
+This was not so easily fixed; however, I believe my solution is intuitive.
+When zooming in, the pixel your mouse is hovering is the same as before zooming in.
 This is calculated by offsetting the canvas x and y by the formula shown below:
 
 `pos = mousePos - ((mousePos - pos) * scaleDifference)`
@@ -990,7 +1028,7 @@ The error is shown below:
 
 ![morseCodeIg.png](repo/morseCodeIg.png)
 
-This is easily fixed by setting the "lastMouseDragX" and "lastMouseDragY" on mouse click, and removing setting them to -1 on release.
+This is easily fixed by setting the "lastMouseDragX" and "lastMouseDragY" on mouse click and removing setting them to -1 on release.
 ```java
 public void mouseReleased(MouseEvent e) {
     MouseMotionListener.CURRENTLY_DRAGGING_ELEMENT = null;
@@ -1045,7 +1083,7 @@ public boolean handleHover(MouseEvent e) {
     // ...
 }
 ```
-However, this allowed me to find a bug, due to me resetting the cursor constantly, it flickers to the wrong cursor sometimes, while still hovering an element.
+However, this allowed me to find a bug, due to me resetting the cursor constantly, it sometimes flickers to the wrong cursor, while still hovering an element.
 This was easily fixed by only resetting the cursor if no element is hovered.
 ```java
 private void handleMouseMoveEvent(MouseEvent e) {
@@ -1196,7 +1234,7 @@ public void draw(Graphics2D g) {
     // ...
     for (int i = 0; i < Main.CURSORS.size(); i++) {
         Cursor cursor = Main.CURSORS.get(i);
-        // if the cursor box being drawn right now is the current cursor, its drawn darker.
+        // if the cursor box being drawn right now is the current cursor, it's drawn darker.
         g.setColor(Main.currentCursor == cursor ? Color.WHITE.darker() : Color.WHITE);
         g.fillRect(getIconX(i), getIconY(), ICON_SIZE, ICON_SIZE);
         g.drawImage(cursor.ICON, getIconX(i), getIconY(), ICON_SIZE, ICON_SIZE, null);
@@ -1221,7 +1259,7 @@ private Cursor getHoveredCursor(MouseEvent e) {
 ```
 
 ### Refactoring Positions
-Between features, I thought it makes more sense for each Element's transformations to be a lambda function.
+Between features, I thought it made more sense for each Element's transformations to be a lambda function.
 Previously we gave the constructor x,y,width,height and had to worry about updating these values when needed.
 Now, we simply pass a function as each parameter, and each time they are called, their position is checked again.
 Here are the changes to the element class:
@@ -1520,7 +1558,7 @@ private static void initialiseGUI() {
     FRAME.setDropTarget(new FileDropListener());
 }
 ```
-and this listener parses the file dropped onto it as an image, it works for all major image formats:
+and this listener parses the file dropped onto it as an image; it works for all major image formats:
 ```java
 public class FileDropListener extends DropTarget { 
     @Override
@@ -1532,13 +1570,13 @@ public class FileDropListener extends DropTarget {
             
             // read the image
             BufferedImage bufferedImage = ImageIO.read(droppedFiles.getFirst());
-            // if the parsed file isnt an image, then just ignore it
+            // if the parsed file isn't an image, then just ignore it
             if (bufferedImage != null) Main.CANVAS.setCanvasImage(bufferedImage);
             
             // success!
             dtde.dropComplete(true);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }

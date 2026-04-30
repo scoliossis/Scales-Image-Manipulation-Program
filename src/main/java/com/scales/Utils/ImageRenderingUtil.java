@@ -17,6 +17,7 @@ public class ImageRenderingUtil {
     public static BufferedImage TRANSPARENT_BACKGROUND = null;
     public static Image CACHED_BACKGROUND = null;
 
+    // todo: handle concurrently
     public static void handleAntiAliasing() {
         for (Canvas canvas : ANTIALIAS_QUEUE.keySet().toArray(new Canvas[0])) {
             Long lastPush = ANTIALIAS_QUEUE.get(canvas);
@@ -92,7 +93,7 @@ public class ImageRenderingUtil {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, width, height);
 
-        g.setColor(new Color(0, 0, 0, .2f));
+        g.setColor(new Color(0, 0, 0, .1f));
         int loops = 0;
         for (int y = 0; y <= height; y+=increment) {
             for (int x = loops % 2 == 0 ? increment : 0; x <= width; x+=increment*2) {
