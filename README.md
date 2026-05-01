@@ -1,10 +1,34 @@
-## <u>Table of Contents</u>
+<!--shoutout to https://bitdowntoc.derlin.ch/-->
 - [Analysis of the Problem](#analysis-of-the-problem)
     * [Problem Identification](#problem-identification)
     * [Stakeholders](#stakeholders)
         + [General Purpose](#general-purpose)
         + [Hobbyists](#hobbyists)
         + [Professionals](#professionals)
+    * [User Voice](#user-voice)
+        + [General Questions](#general-questions)
+            - [What image manipulation software do you currently use?](#what-image-manipulation-software-do-you-currently-use)
+            - [What do you primarily use image editing software for?](#what-do-you-primarily-use-image-editing-software-for)
+            - [How important is ease of use compared to advanced functionality?](#how-important-is-ease-of-use-compared-to-advanced-functionality)
+            - [What frustrates you most about current image editing programs?](#what-frustrates-you-most-about-current-image-editing-programs)
+            - [Do you prefer a simple interface or one with many visible options?](#do-you-prefer-a-simple-interface-or-one-with-many-visible-options)
+        + [Hobbyist-Focused Questions](#hobbyist-focused-questions)
+            - [Do you prefer tools that work immediately or tools with lots of configuration options?](#do-you-prefer-tools-that-work-immediately-or-tools-with-lots-of-configuration-options)
+            - [How important is performance on low-end hardware?](#how-important-is-performance-on-low-end-hardware)
+            - [Would you use keyboard shortcuts or prefer clickable buttons?](#would-you-use-keyboard-shortcuts-or-prefer-clickable-buttons)
+        + [Professional-Focused Questions](#professional-focused-questions)
+            - [Which advanced features do you regularly use (e.g. layers, effects, opacity control)?](#which-advanced-features-do-you-regularly-use-eg-layers-effects-opacity-control)
+            - [How important is customisation of tools (e.g. brush size, opacity, antialiasing)?](#how-important-is-customisation-of-tools-eg-brush-size-opacity-antialiasing)
+            - [Would you prefer more features even if the interface becomes more complex?](#would-you-prefer-more-features-even-if-the-interface-becomes-more-complex)
+            - [How important is documentation or help resources?](#how-important-is-documentation-or-help-resources)
+        + [Usability and Design Questions](#usability-and-design-questions)
+            - [How should tools be organised (e.g. toolbar, dropdown menus, panels)?](#how-should-tools-be-organised-eg-toolbar-dropdown-menus-panels)
+            - [Do you prefer icons, text labels, or both for tools?](#do-you-prefer-icons-text-labels-or-both-for-tools)
+            - [What would make an interface feel intuitive to you?](#what-would-make-an-interface-feel-intuitive-to-you)
+            - [How quickly do you expect the program to start and respond?](#how-quickly-do-you-expect-the-program-to-start-and-respond)
+        + [Open Feedback](#open-feedback)
+            - [Are there any features you would like to see in a new image manipulation program?](#are-there-any-features-you-would-like-to-see-in-a-new-image-manipulation-program)
+            - [Do you have any suggestions to improve usability or performance?](#do-you-have-any-suggestions-to-improve-usability-or-performance)
     * [Research](#research)
         + [GNU Image Manipulation Program (GIMP)](#gnu-image-manipulation-program-gimp)
         + [Microsoft Paint](#microsoft-paint)
@@ -12,13 +36,15 @@
         + [Language choice](#language-choice)
         + [Problem Limitations](#problem-limitations)
         + [Success Criteria](#success-criteria)
-- [Design of the Solution](#design-of-the-solution)
-    * [Decomposition](#decomposition)
-    * [Solution Description](#solution-description)
         + [Computational Thinking](#computational-thinking)
             - [Abstraction](#abstraction)
-            - [Decomposition](#decomposition-1)
-            - [Problem Recognition](#problem-recognition)
+            - [Decomposition](#decomposition)
+            - [Pattern Recognition](#pattern-recognition)
+            - [Thinking Logically](#thinking-logically)
+            - [Thinking Concurrently](#thinking-concurrently)
+- [Design of the Solution](#design-of-the-solution)
+    * [Solution Description](#solution-description)
+        + [Decomposition](#decomposition-1)
         + [Justification of Structure](#justification-of-structure)
             - [GUI](#gui)
             - [Handling Inputs](#handling-inputs)
@@ -82,7 +108,91 @@ Different fields of creativity, such as graphic designers and artists, can be ac
 - Complex effects should be easily applicable to the image
 - Documentation should be written to assist professionals in finding how their desired goal is achievable
 
+## User Voice
+To gather feedback for the design of the program, I created a survey targeting both hobbyist and professional users.  
+The questions were designed to identify user needs, preferred features, and usability expectations.
+I dedicated separate questions to each stakeholder group, however, I allowed all users to answer the same questions.
+A total of 10 responses were recorded. The responses are summarised below each question.
+
+### General Questions
+#### What image manipulation software do you currently use?
+Five users currently actively use GIMP, three use Microsoft Paint, one uses Photoshop, while the other does not actively use any image editing software.
+
+#### What do you primarily use image editing software for?
+Two users are artists and would like to draw images from scratch. 
+Seven users use it for editing existing images, such as cropping and adding text.
+One user uses it for changing file extensions.
+
+#### How important is ease of use compared to advanced functionality?
+Eight users preferred ease of use over advanced features.
+Five of which said the simplicity of the interface was the most important factor.
+
+#### What frustrates you most about current image editing programs?
+All five GIMP uses noted the complexity of the interface.
+Two of the three Paint users complained about the lack of options.
+And the Photoshop user stated that they were looking for a free alternative.
+
+#### Do you prefer a simple interface or one with many visible options?
+Four of five GIMP users noted that GIMP's interface was far too unorganised and unintuitive.
+Two of the three Paint users preferred a more compact interface.
+One user said they prefer many visible options but nothing unnecessary.
+
+### Hobbyist-Focused Questions
+#### Do you prefer tools that work immediately or tools with lots of configuration options?
+Two users preferred heavily configurable tools, while the rest preferred tools that require no configuration to be effective.
+
+#### How important is performance on low-end hardware?
+One user said that performance was a large concern.
+Four said that performance was not a concern, while the other five said it could be a concern.
+
+#### Would you use keyboard shortcuts or prefer clickable buttons?
+Six users stated keyboard shortcuts to be a priority.
+Two said they were indifferent.
+
+### Professional-Focused Questions
+#### Which advanced features do you regularly use (e.g. layers, effects, opacity control)?
+Seven users said they require layers.
+Two said they use advanced effects such as blur and glow.
+
+#### How important is customisation of tools (e.g. brush size, opacity, antialiasing)?
+Simple customisation was said to be a requirement.
+Five requested complex customisation for each tool.
+
+#### Would you prefer more features even if the interface becomes more complex?
+Four users stated a preference for the interface to remain compact.
+Six expressed that a large number of tools to use would be helpful.
+
+#### How important is documentation or help resources?
+One user stated that documentation would be nice to gain a better understanding of the program.
+
+### Usability and Design Questions
+#### How should tools be organised (e.g. toolbar, dropdown menus, panels)?
+Everyone unanimously preferred a toolbar at the top as well as a sidebar on the left for extra settings for the current tool.
+
+#### Do you prefer icons, text labels, or both for tools?
+Seven users expressed that text labels should not be necessary as they take up necessary space.
+The remaining three said that labels would be useful but do not have to be large.
+
+#### What would make an interface feel intuitive to you?
+The users of each program requested an interface which feels familiar to them.
+
+#### How quickly do you expect the program to start and respond?
+All seven users who exclusively use an image editing program for editing existing images said they expected the program to start quickly.
+While the other three expressed indifference to the startup time.
+
+### Open Feedback
+#### Are there any features you would like to see in a new image manipulation program?
+One user responded that making graphs inside the program would be useful.
+One user stated that being able to simply rotate an image in 3d would be useful.
+
+#### Do you have any suggestions to improve usability or performance?
+One user reiterated the importance of keybinds.
+Two users stated that they do not use a Windows operating system, which could be a concern.
+
 ## Research
+Learning from the failures of other image editing programs to find my niche in the space is important.
+There is no reason to create a clone of an existing program, my program should feature unique features and have an intuitive user interface.
+
 ### GNU Image Manipulation Program (GIMP)
 GIMP is a popular open source image manipulation program which is capable of complex effects.
 It allows the user to perform any image manipulation they can imagine, as simple as cropping and as complex as blur and antialiasing.
@@ -350,9 +460,13 @@ The library also allows for the manipulation of images, such as drawing, scaling
 Below is an example of how to draw to an image. The image fed to the function will have a rectangle drawn to it.
 ```java
 public static void drawRectToImage(BufferedImage image, int x, int y, int width, int height) {
+    // get image graphics context
     Graphics2D g = image.createGraphics();
+    // set graphics colour to red
     g.setColor(Color.RED);
+    // draw filled red rectangle
     g.fillRect(x, y, width, height);
+    // dispose of graphics context to free up memory
     g.dispose();
 }
 ```
@@ -364,6 +478,42 @@ public static void saveImage(BufferedImage image) throws IOException {
 ```
 
 With just these small steps, it is already possible to create a UI, handle an input, manipulate an image, and output the modified image.
+
+A very simplified overall structure of the program is shown below.
+
+```java
+// main function, called on program start
+void main(String[] args) {
+    // create window
+    JFrame frame = new JFrame("window");
+    
+    // add event listeners allowing us to handle user input
+    frame.addKeyListener(new KeyListener());
+    frame.addMouseListener(new MouseListener());
+    
+    // as events are handled in a separate thread, we can use the main thread to draw the UI until the program is finished
+    while (true) drawUI();
+}
+
+void drawUI() {
+    // draws the canvas first as it should be drawn below other UI elements
+    drawCanvas();
+    // draws the toolbar on top of the canvas, which should hold all the possible cursor types
+    drawToolbar();
+}
+
+void handleMouseInput(MouseEvent e) {
+    // check if the toolbar is clicked. it is drawn last, meaning it is drawn on top of other objects, therefore, it should have its interaction handled first
+    // if the toolbar's click is handled, then we should not try to handle clicks on other elements
+    if (handleToolbarClick(e)) return;
+    
+    // handles drawing to the canvas at the coordinates parsed in the MouseEvent
+    handleCanvasClick(e);
+}
+
+// this function is called when a keybind is pressed, it handles each keybind individually, the order for them being handled is not important, as no two keybinds can be pressed in the same event
+void handleKeyboardInput(KeyEvent e);
+```
 
 <!--TODO: Describe usability features to be included in the solution-->
 
@@ -1647,6 +1797,14 @@ This allows us to easily take a screenshot and add it straight to the canvas.
 Throughout the development phase I found and fixed bugs, so that the final product was robust.
 Through my testing, all classes function as intended with no logic or syntax errors.
 <!--Provide annotated evidence of usability testing (user feedback).-->
+| Test Data                          | Result                                                                                                       |
+|:-----------------------------------|:-------------------------------------------------------------------------------------------------------------|
+| Large Image                        | Large images do not take up a noticeable amount more RAM than the source image                               |
+| Small Image                        | Small images are easily handled as the zooming allows for pixel precision                                    |
+| CTRL+Z with no undo history        | The undo history size is queried before trying to fetch                                                      |
+| Clicking outside image bounds      | The canvas only handles clicks inside it's bounds                                                            |
+| CTRL+V with invalid clipboard      | The image pasting event is surrounded by a try-catch to stop invalid clipboard contents crashing the program |
+| Resizing image to be negative size | Images cannot be changed to be negative size or zero size                                                    |
 
 ## Success of the Solution
 The 
