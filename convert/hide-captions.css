@@ -1,29 +1,87 @@
 /* yeah i ChatGPT'ed a css file. what u gonna do about it? */
 
+/* 1. Page Setup: Bottom-middle page numbers */
+@page {
+    size: A4;
+    margin: 20mm;
+    @bottom-center {
+        content: "Page " counter(page);
+        font-family: "Courier New", Courier, monospace;
+        font-size: 10pt;
+    }
+}
+
+/* 2. Table of Contents: Indented subheadings and page numbers on the right */
+#TOC ul {
+    list-style-type: none;
+    padding-left: 25px;
+}
+
+#TOC > ul {
+    padding-left: 0;
+}
+
+#TOC li {
+    margin-bottom: 0.4em;
+    margin-top: 0.4em;
+}
+
+#TOC a {
+    text-decoration: none;
+    color: black;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+#TOC a::after {
+    content: leader('.') target-counter(attr(href), page);
+    margin-left: 10px;
+    font-weight: normal;
+}
+
+#TOC > ul > li > a {
+    font-weight: bold;
+}
+
+/* 3. Images: Scale to fit and prevent overflow */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    page-break-inside: avoid;
+}
+
+/* 4. Code Blocks and Formatting Fixes */
+
 /* Hide figure captions */
 figure figcaption {
     display: none;
 }
 
-/* Images scale and avoid page breaks */
-img {
-    max-width: 100%;
-    height: auto;
-    page-break-inside: avoid;
+/* Container and block alignment */
+div.sourceCode, pre {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
 }
 
-/* Code blocks fix: prevent word loss and clipping */
 pre, code {
-    display: block;               /* ensures wrapping works consistently */
-    white-space: pre-wrap;        /* wrap long lines safely */
-    word-break: break-word;       /* force wrap inside long words if needed */
-    overflow-wrap: anywhere;      /* extra safety for wrapping */
-    overflow: visible;            /* do not clip content */
-    line-height: 1.3em;           /* slightly increased line spacing to prevent overlap */
-    padding: 0.5em;               /* optional: keeps text away from edges */
+    display: block;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    line-height: 1.3em;
+    padding: 0.5em;
+
+    /* CONTROL TAB SIZE HERE */
+    -moz-tab-size: 4;   /* For Firefox compatibility */
+    -o-tab-size: 4;     /* For Opera compatibility */
+    tab-size: 4;        /* Standard: set to 2 or 4 depending on preference */
 }
 
-/* Optional: ensure inline syntax highlighting spans don't clip text */
+/* Ensure inline syntax highlighting spans don't clip text */
 code span {
     display: inline !important;
 }

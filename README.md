@@ -1,81 +1,3 @@
-<!--shoutout to https://bitdowntoc.derlin.ch/-->
-- [Analysis of the Problem](#analysis-of-the-problem)
-    * [Problem Identification](#problem-identification)
-    * [Stakeholders](#stakeholders)
-        + [General Purpose](#general-purpose)
-        + [Hobbyists](#hobbyists)
-        + [Professionals](#professionals)
-    * [User Voice](#user-voice)
-        + [General Questions](#general-questions)
-            - [What image manipulation software do you currently use?](#what-image-manipulation-software-do-you-currently-use)
-            - [What do you primarily use image editing software for?](#what-do-you-primarily-use-image-editing-software-for)
-            - [How important is ease of use compared to advanced functionality?](#how-important-is-ease-of-use-compared-to-advanced-functionality)
-            - [What frustrates you most about current image editing programs?](#what-frustrates-you-most-about-current-image-editing-programs)
-            - [Do you prefer a simple interface or one with many visible options?](#do-you-prefer-a-simple-interface-or-one-with-many-visible-options)
-        + [Hobbyist-Focused Questions](#hobbyist-focused-questions)
-            - [Do you prefer tools that work immediately or tools with lots of configuration options?](#do-you-prefer-tools-that-work-immediately-or-tools-with-lots-of-configuration-options)
-            - [How important is performance on low-end hardware?](#how-important-is-performance-on-low-end-hardware)
-            - [Would you use keyboard shortcuts or prefer clickable buttons?](#would-you-use-keyboard-shortcuts-or-prefer-clickable-buttons)
-        + [Professional-Focused Questions](#professional-focused-questions)
-            - [Which advanced features do you regularly use (e.g. layers, effects, opacity control)?](#which-advanced-features-do-you-regularly-use-eg-layers-effects-opacity-control)
-            - [How important is customisation of tools (e.g. brush size, opacity, antialiasing)?](#how-important-is-customisation-of-tools-eg-brush-size-opacity-antialiasing)
-            - [Would you prefer more features even if the interface becomes more complex?](#would-you-prefer-more-features-even-if-the-interface-becomes-more-complex)
-            - [How important is documentation or help resources?](#how-important-is-documentation-or-help-resources)
-        + [Usability and Design Questions](#usability-and-design-questions)
-            - [How should tools be organised (e.g. toolbar, dropdown menus, panels)?](#how-should-tools-be-organised-eg-toolbar-dropdown-menus-panels)
-            - [Do you prefer icons, text labels, or both for tools?](#do-you-prefer-icons-text-labels-or-both-for-tools)
-            - [What would make an interface feel intuitive to you?](#what-would-make-an-interface-feel-intuitive-to-you)
-            - [How quickly do you expect the program to start and respond?](#how-quickly-do-you-expect-the-program-to-start-and-respond)
-        + [Open Feedback](#open-feedback)
-            - [Are there any features you would like to see in a new image manipulation program?](#are-there-any-features-you-would-like-to-see-in-a-new-image-manipulation-program)
-            - [Do you have any suggestions to improve usability or performance?](#do-you-have-any-suggestions-to-improve-usability-or-performance)
-    * [Research](#research)
-        + [GNU Image Manipulation Program (GIMP)](#gnu-image-manipulation-program-gimp)
-        + [Microsoft Paint](#microsoft-paint)
-    * [Problem Solution](#problem-solution)
-        + [Language choice](#language-choice)
-        + [Problem Limitations](#problem-limitations)
-        + [Success Criteria](#success-criteria)
-        + [Computational Thinking](#computational-thinking)
-            - [Abstraction](#abstraction)
-            - [Decomposition](#decomposition)
-            - [Pattern Recognition](#pattern-recognition)
-            - [Thinking Logically](#thinking-logically)
-            - [Thinking Concurrently](#thinking-concurrently)
-- [Design of the Solution](#design-of-the-solution)
-    * [Solution Description](#solution-description)
-        + [Decomposition](#decomposition-1)
-        + [Justification of Structure](#justification-of-structure)
-            - [GUI](#gui)
-            - [Handling Inputs](#handling-inputs)
-            - [Manipulating Images](#manipulating-images)
-    * [Key Variables](#key-variables)
-    * [Testing](#testing)
-- [Development](#development)
-    * [Prototype 1](#prototype-1)
-        + [GUI](#gui-1)
-        + [Canvas](#canvas)
-        + [Mouse Inputs](#mouse-inputs)
-    * [Prototype 2](#prototype-2)
-        + [Element Class](#element-class)
-        + [Resizing the canvas](#resizing-the-canvas)
-        + [Fixing Transformations](#fixing-transformations)
-        + [Applying Transformations](#applying-transformations)
-    * [Prototype 3](#prototype-3)
-        + [Toolbar](#toolbar)
-        + [Refactoring Positions](#refactoring-positions)
-        + [Changing Colours](#changing-colours)
-    * [Prototype 4](#prototype-4)
-        + [Undo/Redoing](#undoredoing)
-        + [Rubber](#rubber)
-        + [Importing Images](#importing-images)
-- [Evaluation](#evaluation)
-    * [Testing to Inform Evaluation](#testing-to-inform-evaluation)
-        + [Functional Testing](#functional-testing)
-    * [Success of the Solution](#success-of-the-solution)
-    * [Description of the Final Product](#description-of-the-final-product)
-    * [Maintenance and Development](#maintenance-and-development)
-
 # Analysis of the Problem
 ## Problem Identification
 I am creating an image manipulation program.
@@ -276,12 +198,12 @@ Abstraction, Decomposition, and Problem Recognition are all computational method
 #### Abstraction
 Abstraction involves simplifying a problem by removing unnecessary detail and focusing only on what is essential.
 In this project, abstraction is used extensively to reduce both development and user complexity.
-At a system level, I abstract away low-level graphics operations by using Java's existing libraries `Graphics2D` and `BufferedImage`.
+At a system level, I abstract away low-level graphics operations by using Java's existing libraries "Graphics2D" and "BufferedImage".
 This avoids the need to manually handle each pixel and interfacing with the GPU while still allowing control when needed.
 At a design level, I represent complex concepts using simplified models.
-The canvas is treated as a single `BufferedImage`, regardless of how it is displayed or transformed on screen.
-Tools such as pencil, fill, and selection are abstracted into a common `Cursor` class, allowing consistent handling of different behaviours.
-UI components are abstracted into reusable `Element` objects, meaning interaction logic can be applied uniformly.
+The canvas is treated as a single "BufferedImage", regardless of how it is displayed or transformed on screen.
+Tools such as pencil, fill, and selection are abstracted into a common "Cursor" class, allowing consistent handling of different behaviours.
+UI components are abstracted into reusable "Element" objects, meaning interaction logic can be applied uniformly.
 This abstraction reduces redundancy, improves readability, and allows features to be extended without rewriting core logic.
 
 #### Decomposition
@@ -300,9 +222,9 @@ It also improves maintainability, as changes in one module do not significantly 
 Pattern recognition involves identifying similarities between problems and reusing existing solutions.
 This reduces development time and increases reliability; in this project, several recurring patterns were identified.
 Tools' behaviour is a pattern, as each tool takes input coordinates and modifies the image at the input coordinates.
-This is implemented using a `Cursor` class which contains a `draw` method which takes a `BufferedImage` and coordinates and modifies the image at those coordinates.
+This is implemented using a "Cursor" class which contains a "draw" method which takes a "BufferedImage" and coordinates and modifies the image at those coordinates.
 These tools can therefore share a common interface or superclass.
-Additionally, existing solutions provided by Java libraries such as `ImageIO` are reused rather than reinvented.
+Additionally, existing solutions provided by Java libraries such as "ImageIO" are reused rather than reinvented.
 This ensures robustness and efficiency.
 
 #### Thinking Logically
@@ -482,6 +404,8 @@ With just these small steps, it is already possible to create a UI, handle an in
 A very simplified overall structure of the program is shown below.
 
 ```java
+boolean running = true;
+
 // main function, called on program start
 void main(String[] args) {
     // create window
@@ -492,7 +416,7 @@ void main(String[] args) {
     frame.addMouseListener(new MouseListener());
     
     // as events are handled in a separate thread, we can use the main thread to draw the UI until the program is finished
-    while (true) drawUI();
+    while (running) drawUI();
 }
 
 void drawUI() {
@@ -1173,7 +1097,7 @@ Below are pictures from before and after zooming in, without moving the mouse:
 ![afterZooming.png](repo/afterZooming.png)
 
 As a final fix of this prototype, when clicking, the "lastMouseDragX" and "lastMouseDragY" variables are still at -1.
-If the mouse is moving while clicked, this causes there to be a dot where first clicked, and a gap because it takes 1 frame to start interpolating.
+If the mouse is moving while clicked, this causes there to be a dot where first clicked, and a gap because it takes one frame to start interpolating.
 The error is shown below:
 
 ![morseCodeIg.png](repo/morseCodeIg.png)
@@ -1797,6 +1721,7 @@ This allows us to easily take a screenshot and add it straight to the canvas.
 Throughout the development phase I found and fixed bugs, so that the final product was robust.
 Through my testing, all classes function as intended with no logic or syntax errors.
 <!--Provide annotated evidence of usability testing (user feedback).-->
+
 | Test Data                          | Result                                                                                                       |
 |:-----------------------------------|:-------------------------------------------------------------------------------------------------------------|
 | Large Image                        | Large images do not take up a noticeable amount more RAM than the source image                               |
