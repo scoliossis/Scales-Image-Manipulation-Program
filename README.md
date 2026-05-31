@@ -1,3 +1,7 @@
+This project was for my computer science NEA, I failed btw, 16/70, below the entire NEA in markdown, because I prefer markdown to google docs ig
+
+---
+
 # Analysis of the Problem
 ## Problem Identification
 I am creating an image manipulation program.
